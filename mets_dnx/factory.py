@@ -133,7 +133,7 @@ def build_mets(ie_dmd_dict=None,
             if amdsec.attrib['ID'] == rep_id + '-amd':
                 rep_amdsec = amdsec
         general_rep_characteristics = [{'RevisionNumber': '1', 
-                'DigitalOriginal': str(digital_original),
+                'DigitalOriginal': str(digital_original).lower(),
                 'usageType': 'VIEW',
                 'preservationType': pres_type}]
         rep_amd_tech = dnx_factory.build_rep_amdTech(generalRepCharacteristics=general_rep_characteristics)
