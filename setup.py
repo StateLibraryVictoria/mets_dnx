@@ -10,6 +10,6 @@ config = {
 	'author_email':'sean.mosely@gmail.com',
 	'packages':['mets_dnx',],
 	'description':'Python library for building Rosetta DNX/METS XML documents',
-	'install_requires':['lxml', 'pymets','pydc', 'pydnx']}
+	'install_requires':['lxml==3.6.4', 'pymets','pydc', 'pydnx']}
 
 setup(**config)
