@@ -1,16 +1,14 @@
-from pydc import factory as dc_factory
-from pymets import mets_factory as mf
-from pymets import mets_model
-from pydnx import factory as dnx_factory
-
-from lxml import etree as ET
-
 import hashlib
 import os
 import re
 import time
 
+from lxml import etree as ET
 
+from pydc import factory as dc_factory
+from pymets import mets_factory as mf
+from pymets import mets_model
+from pydnx import factory as dnx_factory
 
 def generate_md5(filepath, block_size=2**20):
     """For producing md5 checksums for a file at a specified filepath."""
@@ -24,23 +22,43 @@ def generate_md5(filepath, block_size=2**20):
     return m.hexdigest()
 
 
-def build_amdsec(amdsec, tech_sec=None, rights_sec=None, source_sec=None, digiprov_sec=None):
+def build_amdsec(amdsec, tech_sec=None, rights_sec=None, 
+                 source_sec=None, digiprov_sec=None):
     amd_id = amdsec.attrib['ID']
-    amd_tech = ET.SubElement(amdsec, "{http://www.loc.gov/METS/}techMD", ID=amd_id + "-tech")
-    amd_rights = ET.SubElement(amdsec, "{http://www.loc.gov/METS/}rightsMD", ID=amd_id + "-rights")
-    amd_source = ET.SubElement(amdsec, "{http://www.loc.gov/METS/}sourceMD", ID=amd_id + "-source")
-    amd_digiprov = ET.SubElement(amdsec, "{http://www.loc.gov/METS/}digiprovMD", ID=amd_id + "-digiprov")
+    amd_tech = ET.SubElement(
+                    amdsec, 
+                    "{http://www.loc.gov/METS/}techMD", 
+                    ID=amd_id + "-tech")
+    amd_rights = ET.SubElement(
+                    amdsec,
+                    "{http://www.loc.gov/METS/}rightsMD",
+                    ID=amd_id + "-rights")
+    amd_source = ET.SubElement(
+                    amdsec,
+                    "{http://www.loc.gov/METS/}sourceMD",
+                    ID=amd_id + "-source")
+    amd_digiprov = ET.SubElement(
+                    amdsec,
+                    "{http://www.loc.gov/METS/}digiprovMD",
+                    ID=amd_id + "-digiprov")
 
     for el in [amd_tech, amd_rights, amd_source, amd_digiprov]:
-        mdWrap = ET.SubElement(el, "{http://www.loc.gov/METS/}mdWrap", MDTYPE="OTHER", OTHERMDTYPE="dnx")
+        mdWrap = ET.SubElement(
+                        el, 
+                        "{http://www.loc.gov/METS/}mdWrap",
+                        MDTYPE="OTHER", OTHERMDTYPE="dnx")
         xmlData = ET.SubElement(mdWrap, "{http://www.loc.gov/METS/}xmlData")
-        if el.tag == "{http://www.loc.gov/METS/}techMD" and tech_sec != None:
+        if (el.tag == "{http://www.loc.gov/METS/}techMD" and 
+                tech_sec != None):
             xmlData.append(tech_sec)
-        elif el.tag == "{http://www.loc.gov/METS/}rightsMD" and rights_sec != None:
+        elif (el.tag == "{http://www.loc.gov/METS/}rightsMD" and 
+                rights_sec != None):
             xmlData.append(rights_sec)
-        if el.tag == "{http://www.loc.gov/METS/}sourceMD" and source_sec != None:
+        elif (el.tag == "{http://www.loc.gov/METS/}sourceMD" and 
+                source_sec != None):
             xmlData.append(source_sec)
-        if el.tag == "{http://www.loc.gov/METS/}digiprovMD" and digiprov_sec != None:
+        elif (el.tag == "{http://www.loc.gov/METS/}digiprovMD" and 
+                digiprov_sec != None):
             xmlData.append(digiprov_sec)
 
 
@@ -66,23 +84,36 @@ def build_mets(ie_dmd_dict=None,
     if type(ie_dmd_dict) == list and len(ie_dmd_dict) == 1:
         ie_dmd_dict = ie_dmd_dict[0]
     dc_record = dc_factory.build_dc_record(ie_dmd_dict)
-    dmdsec = ET.SubElement(mets, "{http://www.loc.gov/METS/}dmdSec", ID="ie-dmd")
-    mdwrap = ET.SubElement(dmdsec, "{http://www.loc.gov/METS/}mdWrap", MDTYPE="DC")
-    xmldata = ET.SubElement(mdwrap, "{http://www.loc.gov/METS/}xmlData")
+    dmdsec = ET.SubElement(
+                mets,
+                "{http://www.loc.gov/METS/}dmdSec",
+                ID="ie-dmd")
+    mdwrap = ET.SubElement(
+                dmdsec,
+                "{http://www.loc.gov/METS/}mdWrap",
+                MDTYPE="DC")
+    xmldata = ET.SubElement(
+                mdwrap,
+                "{http://www.loc.gov/METS/}xmlData")
     xmldata.append(dc_record)
 
     # build ie amd section
-    ie_amdsec = ET.SubElement(mets, "{http://www.loc.gov/METS/}amdSec", ID="ie-amd")
+    ie_amdsec = ET.SubElement(
+                    mets,
+                    "{http://www.loc.gov/METS/}amdSec",
+                    ID="ie-amd")
     if ((generalIECharacteristics != None) 
             or (cms != None) 
             or (objectIdentifier != None)
             or (webHarvesting != None)):
-        ie_amd_tech = dnx_factory.build_ie_amdTech(generalIECharacteristics=generalIECharacteristics,
+        ie_amd_tech = dnx_factory.build_ie_amdTech(
+            generalIECharacteristics=generalIECharacteristics,
             objectIdentifier=objectIdentifier)
     else:
         ie_amd_tech = None
     if (accessRightsPolicy != None):
-        ie_amd_rights = dnx_factory.build_ie_amdRights(accessRightsPolicy=accessRightsPolicy)
+        ie_amd_rights = dnx_factory.build_ie_amdRights(
+            accessRightsPolicy=accessRightsPolicy)
     else:
         ie_amd_rights = None
     if (eventList != None):
@@ -91,10 +122,15 @@ def build_mets(ie_dmd_dict=None,
         ie_amd_digiprov = None
     # TODO (2016-10-03): add functionality for ie_amdSourceMD
     ie_amd_source = None
-    build_amdsec(ie_amdsec, ie_amd_tech, ie_amd_rights, ie_amd_digiprov, ie_amd_source)
+    build_amdsec(
+            ie_amdsec,
+            ie_amd_tech,
+            ie_amd_rights,
+            ie_amd_digiprov,
+            ie_amd_source)
 
-
-    mf.build_amdsec_filegrp_structmap(mets,
+    mf.build_amdsec_filegrp_structmap(
+        mets,
         ie_id="ie1", 
         pres_master_dir=pres_master_dir,
         modified_master_dir=modified_master_dir,
@@ -108,7 +144,9 @@ def build_mets(ie_dmd_dict=None,
     file_groups = mets.findall('.//{http://www.loc.gov/METS/}fileGrp')
     for file_group in file_groups:
         rep_id = file_group.attrib['ID']
-        rep_type = mets.find('.//{http://www.loc.gov/METS/}structMap[@ID="%s"]/{http://www.loc.gov/METS/}div' % rep_id ).attrib['LABEL']
+        rep_type = mets.find('.//{%s}structMap[@ID="%s"]/{%s}div' % 
+            ('http://www.loc.gov/METS/', rep_id, 'http://www.loc.gov/METS/')
+            ).attrib['LABEL']
         
         if rep_type == 'Preservation Master':
             pres_type = 'PRESERVATION_MASTER'
@@ -123,47 +161,49 @@ def build_mets(ie_dmd_dict=None,
             pres_type = None
             pres_location = '.'
 
-        # rep_amdsec = ET.SubElement(mets, "{http://www.loc.gov/METS/}amdSec", ID=rep_id + "-amd")
-        # rep_amdsec = mets.find('./{http://www.loc.gov/METS/}amdSec[@ID="%s"]' % rep_id + '-amd')
-        # 2016-10-04: Not sure why the above find does not work, but lxml returns None when I do it that way :\
-        # same deal with the file amdsec search below.
-        all_amdsec = mets.findall('.//{http://www.loc.gov/METS/}amdSec')
-        amdsec = None
-        for amdsec in all_amdsec:
-            if amdsec.attrib['ID'] == rep_id + '-amd':
-                rep_amdsec = amdsec
+        rep_amdsec = mets.xpath("//mets:amdSec[@ID='%s']" % 
+                str(rep_id + '-amd'), namespaces=mets.nsmap)[0]
         general_rep_characteristics = [{'RevisionNumber': '1', 
                 'DigitalOriginal': str(digital_original).lower(),
                 'usageType': 'VIEW',
                 'preservationType': pres_type}]
-        rep_amd_tech = dnx_factory.build_rep_amdTech(generalRepCharacteristics=general_rep_characteristics)
+        rep_amd_tech = dnx_factory.build_rep_amdTech(
+            generalRepCharacteristics=general_rep_characteristics)
         rep_amd_rights = None
         rep_amd_digiprov = None
         rep_amd_source = None
-        build_amdsec(rep_amdsec, tech_sec=rep_amd_tech, 
-            rights_sec=rep_amd_rights, source_sec=rep_amd_source, 
+        build_amdsec(
+            rep_amdsec,
+            tech_sec=rep_amd_tech, 
+            rights_sec=rep_amd_rights,
+            source_sec=rep_amd_source, 
             digiprov_sec=rep_amd_digiprov)
 
         # create amdsec for files
         for fl in file_group.findall('./{http://www.loc.gov/METS/}file'):
             fl_id = fl.attrib['ID']
-            # fl_amdsec = ET.SubElement(mets, "{http://www.loc.gov/METS/}amdSec", ID=fl_id + "-amd")            
-            # fl_amdsec = mets.find('./{http://www.loc.gov/METS/}amdSec[@ID="%s"]' % fl_id + '-amd')
             fl_amdsec = None
-            for amdsec in all_amdsec:
-                if amdsec.attrib['ID'] == fl_id + '-amd':
-                    fl_amdsec = amdsec
+            fl_amdsec = mets.xpath("//mets:amdSec[@ID='%s']" % 
+                    str(fl_id + '-amd'), namespaces=mets.nsmap)[0]
             file_original_location = os.path.join(input_dir,
-                fl.find('./{http://www.loc.gov/METS/}fLocat').attrib['{http://www.w3.org/1999/xlink}href'])
-                # mets.find('.//{http://www.loc.gov/METS/}file[@ID="%s"]/{http://www.loc.gov/METS/}FLocat' % fl_id).attrib['{http://www.w3.org/1999/xlink}href'])
+                fl.find('./{http://www.loc.gov/METS/}fLocat').attrib[
+                        '{http://www.w3.org/1999/xlink}href'])
             file_size_bytes = os.path.getsize(file_original_location)
-            last_modified = time.strftime("%Y-%m-%dT%H:%M:%S",time.localtime(os.path.getmtime(file_original_location)))
-            created_time = time.strftime("%Y-%m-%dT%H:%M:%S",time.localtime(os.path.getctime(file_original_location)))
-            general_file_characteristics = [{'fileOriginalPath': file_original_location,
-                'fileSizeBytes': str(file_size_bytes), 'fileModificationDate': last_modified,
+            last_modified = time.strftime(
+                    "%Y-%m-%dT%H:%M:%S",
+                    time.localtime(os.path.getmtime(file_original_location)))
+            created_time = time.strftime(
+                    "%Y-%m-%dT%H:%M:%S",
+                    time.localtime(os.path.getctime(file_original_location)))
+            general_file_characteristics = [{
+                'fileOriginalPath': file_original_location,
+                'fileSizeBytes': str(file_size_bytes),
+                'fileModificationDate': last_modified,
                 'fileCreationDate': created_time}]
 
-            file_fixity =  [{'fixityType': 'md5', 'fixityValue': generate_md5(file_original_location)}]
+            file_fixity =  [{
+                'fixityType': 'md5',
+                'fixityValue': generate_md5(file_original_location)}]
 
             fl_amd_tech = dnx_factory.build_file_amdTech(
                 generalFileCharacteristics=general_file_characteristics,
@@ -174,22 +214,24 @@ def build_mets(ie_dmd_dict=None,
     # clean up identifiers so they are consistent with Rosetta requirements
     for element in mets.xpath(".//*[@ID]"):
         element.attrib['ID'] = re.sub('ie[0-9]+\-', '', element.attrib['ID'])
-        element.attrib['ID'] = re.sub('rep([0-9]+)\-file([0-9]+)', r'fid\2-\1', element.attrib['ID'])
+        element.attrib['ID'] = re.sub(
+                'rep([0-9]+)\-file([0-9]+)',
+                r'fid\2-\1',
+                element.attrib['ID'])
     for element in mets.xpath(".//*[@ADMID]"):
-        element.attrib['ADMID'] = re.sub('ie[0-9]+\-rep([0-9]+)\-file([0-9]+)-amd',
-                                    r'fid\2-\1-amd', element.attrib['ADMID'])
-        element.attrib['ADMID'] = re.sub('ie[0-9]+\-rep([0-9]+)-amd',
-                                    r'rep\1-amd', element.attrib['ADMID'])
+        element.attrib['ADMID'] = re.sub(
+                'ie[0-9]+\-rep([0-9]+)\-file([0-9]+)-amd',
+                r'fid\2-\1-amd',
+                element.attrib['ADMID'])
+        element.attrib['ADMID'] = re.sub(
+                'ie[0-9]+\-rep([0-9]+)-amd',
+                r'rep\1-amd',
+                element.attrib['ADMID'])
     for element in mets.xpath(".//*[@FILEID]"):
-        pass
-        element.attrib['FILEID'] = re.sub('ie[0-9]+\-rep([0-9])+\-file([0-9]+)',
-                                    r'fid\2-\1', element.attrib['FILEID'])
-
-    # modify dnx namespace so it is default, and requires no prefix
-    # for element in mets.xpath(".//{http://www.exlibrisgroup.com/dps/dnx}*"):
-    #     element.tag = re.sub('\{http://www.exlibrisgroup.com/dps/dnx\}',
-    #         '', element.tag)
-
+        element.attrib['FILEID'] = re.sub(
+                'ie[0-9]+\-rep([0-9])+\-file([0-9]+)',
+                r'fid\2-\1',
+                element.attrib['FILEID'])
     return mets
 
 
