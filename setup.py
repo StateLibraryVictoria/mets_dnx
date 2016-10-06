@@ -3,6 +3,8 @@ try:
 except ImportError:
     from distutils.core import setup
 
+VERSION='v0.1.0~git'
+
 config = {
 	'name':'mets_dnx',
 	'version':'0.1.0',
@@ -10,6 +12,7 @@ config = {
 	'author_email':'sean.mosely@gmail.com',
 	'packages':['mets_dnx',],
 	'description':'Python library for building Rosetta DNX/METS XML documents',
-	'install_requires':['lxml==3.6.4', 'pymets','pydc', 'pydnx']}
+	'install_requires':['lxml==3.6.4', 'pymets','pydc', 'pydnx'],
+	'download_url': 'https://github.com/NLNZDigitalPreservation/mets_dnx/archive/'+VERSION+'.tar.gz',}
 
 setup(**config)
