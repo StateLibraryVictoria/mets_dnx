@@ -13,6 +13,8 @@ config = {
 	'packages':['mets_dnx',],
 	'description':'Python library for building Rosetta DNX/METS XML documents',
 	'install_requires':['lxml==3.6.4', 'pymets','pydc', 'pydnx'],
-	'download_url': 'https://github.com/NLNZDigitalPreservation/mets_dnx/archive/v'+VERSION+'.tar.gz',}
+	'download_url': 'https://github.com/NLNZDigitalPreservation/mets_dnx/archive/v'+VERSION+'.tar.gz',
+	'license': 'MIT',
+	}
 
 setup(**config)
