@@ -60,3 +60,21 @@ def test_mets_dnx_with_digital_original_details():
         )
     digital_original_el = mets.xpath('.//key[@id="DigitalOriginal"]')[0]
     assert(digital_original_el.text == "true")
+
+
+def test_mets_dnx_single_file():
+    """Test basic construction of METS DNX for single file"""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_single_file_mets(
+        ie_dmd_dict=ie_dc_dict,
+        filepath=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm',
+            'presmaster.jpg'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        )
+    print(ET.tounicode(mets, pretty_print=True))

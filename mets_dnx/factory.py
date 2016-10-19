@@ -62,22 +62,15 @@ def build_amdsec(amdsec, tech_sec=None, rights_sec=None,
             xmlData.append(digiprov_sec)
 
 
-def build_mets(ie_dmd_dict=None,
-                pres_master_dir=None, 
-                modified_master_dir=None,
-                access_derivative_dir=None,
-                cms=None,
-                webHarvesting=None,
-                generalIECharacteristics=None,
-                objectIdentifier=None,
-                accessRightsPolicy=None,
-                eventList=None,
-                input_dir=None,
-                digital_original=False):
-
-    mets = mf.build_mets()
-
-    # build ie-dmdsec
+def _build_ie_dmd_amd(mets,
+                   ie_dmd_dict=None,
+                   generalIECharacteristics=None,
+                   cms=None,
+                   webHarvesting=None,
+                   objectIdentifier=None,
+                   accessRightsPolicy=None,
+                   eventList=None):
+    # first off, build ie-dmdsec
     # check if ie_dmd_dict is a single dictionary inside a list
     # (which is the convention for the METS factory, but not necessary for
     # the DC Factory)
@@ -128,6 +121,30 @@ def build_mets(ie_dmd_dict=None,
             ie_amd_rights,
             ie_amd_digiprov,
             ie_amd_source)
+
+def build_mets(ie_dmd_dict=None,
+                pres_master_dir=None, 
+                modified_master_dir=None,
+                access_derivative_dir=None,
+                cms=None,
+                webHarvesting=None,
+                generalIECharacteristics=None,
+                objectIdentifier=None,
+                accessRightsPolicy=None,
+                eventList=None,
+                input_dir=None,
+                digital_original=False):
+
+    mets = mf.build_mets()
+
+    _build_ie_dmd_amd(mets,
+            ie_dmd_dict=ie_dmd_dict,
+            generalIECharacteristics=generalIECharacteristics,
+            cms=cms,
+            webHarvesting=webHarvesting,
+            objectIdentifier=objectIdentifier,
+            accessRightsPolicy=accessRightsPolicy,
+            eventList=eventList)
 
     mf.build_amdsec_filegrp_structmap(
         mets,
@@ -235,4 +252,95 @@ def build_mets(ie_dmd_dict=None,
     return mets
 
 
+def build_single_file_mets(ie_dmd_dict=None,
+                filepath=None,
+                cms=None,
+                webHarvesting=None,
+                generalIECharacteristics=None,
+                objectIdentifier=None,
+                accessRightsPolicy=None,
+                eventList=None,
+                input_dir=None,
+                digital_original=False):
+    mets = mf.build_mets()
+    _build_ie_dmd_amd(mets,
+            ie_dmd_dict=ie_dmd_dict,
+            generalIECharacteristics=generalIECharacteristics,
+            cms=cms,
+            webHarvesting=webHarvesting,
+            objectIdentifier=objectIdentifier,
+            accessRightsPolicy=accessRightsPolicy,
+            eventList=eventList)
 
+    # Build rep amdsec
+    rep_amdsec = ET.Element("{http://www.loc.gov/METS/}amdSec", ID="rep1-amd")
+    general_rep_characteristics = [{'RevisionNumber': '1', 
+            'DigitalOriginal': str(digital_original).lower(),
+            'usageType': 'VIEW',
+            'preservationType': 'PRESERVATION_MASTER'}]
+    rep_amd_tech = dnx_factory.build_rep_amdTech(
+        generalRepCharacteristics=general_rep_characteristics)
+    rep_amd_rights = None
+    rep_amd_digiprov = None
+    rep_amd_source = None
+    build_amdsec(
+        rep_amdsec,
+        tech_sec=rep_amd_tech, 
+        rights_sec=rep_amd_rights,
+        source_sec=rep_amd_source, 
+        digiprov_sec=rep_amd_digiprov)
+    mets.append(rep_amdsec)
+
+    # Build file amdsec
+    fl_amdsec = ET.Element("{http://www.loc.gov/METS/}amdSec", ID="fid1-1-amd")
+    file_original_location = filepath
+    file_size_bytes = os.path.getsize(file_original_location)
+    last_modified = time.strftime(
+            "%Y-%m-%dT%H:%M:%S",
+            time.localtime(os.path.getmtime(file_original_location)))
+    created_time = time.strftime(
+            "%Y-%m-%dT%H:%M:%S",
+            time.localtime(os.path.getctime(file_original_location)))
+    general_file_characteristics = [{
+        'fileOriginalPath': file_original_location,
+        'fileSizeBytes': str(file_size_bytes),
+        'fileModificationDate': last_modified,
+        'fileCreationDate': created_time}]
+
+    file_fixity =  [{
+        'fixityType': 'md5',
+        'fixityValue': generate_md5(file_original_location)}]
+
+    fl_amd_tech = dnx_factory.build_file_amdTech(
+        generalFileCharacteristics=general_file_characteristics,
+        fileFixity=file_fixity)
+    build_amdsec(fl_amdsec, tech_sec=fl_amd_tech)
+    mets.append(fl_amdsec)
+
+    # build filesec
+    filename = os.path.basename(filepath)
+    filesec = mets_model.FileSec()
+    filegrp = mets_model.FileGrp(ID="rep1", ADMID="rep1-amd")
+    filesec.append(filegrp)
+
+    file_el = mets_model.File(ID='fid1-1', ADMID="fid1-1-amd")
+    filegrp.append(file_el)
+
+    flocat = mets_model.FLocat(LOCTYPE="URL", href=filename)
+    file_el.append(flocat)
+
+    mets.append(filesec)
+    
+    # build structmap
+    structmap = mets_model.StructMap(ID="rep1", TYPE="Physical")
+
+    div_1 = mets_model.Div(LABEL="Preservation Master")
+    structmap.append(div_1)
+
+    div_2 = mets_model.Div(TYPE="FILE", LABEL=filename)
+    div_1.append(div_2)
+
+    fptr = mets_model.Fptr(FILEID='fid1-1')
+    div_2.append(fptr)
+
+    return mets
