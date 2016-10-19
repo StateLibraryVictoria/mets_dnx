@@ -260,7 +260,6 @@ def build_single_file_mets(ie_dmd_dict=None,
                 objectIdentifier=None,
                 accessRightsPolicy=None,
                 eventList=None,
-                input_dir=None,
                 digital_original=False):
     mets = mf.build_mets()
     _build_ie_dmd_amd(mets,
@@ -342,5 +341,7 @@ def build_single_file_mets(ie_dmd_dict=None,
 
     fptr = mets_model.Fptr(FILEID='fid1-1')
     div_2.append(fptr)
+
+    mets.append(structmap)
 
     return mets
