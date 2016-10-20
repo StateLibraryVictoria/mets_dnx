@@ -183,3 +183,24 @@ def test_mets_dnx_with_cms():
     # print(cms_id[0].tag)
     # cms_id = mets.find('.//{http://www.exlibrisgroup.com/dps/dnx}section[@ID="CMS"]/{http://www.exlibrisgroup.com/dps/dnx}record/{http://www.exlibrisgroup.com/dps/dnx}key[@recordId]')
     assert(cms_id[0].text == '55515')
+
+
+def test_filesec_has_use_attrib_for_single_file_sip():
+    """test to confirm that a filesec has the USE="VIEW"
+    attribute"""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_single_file_mets(
+        ie_dmd_dict=ie_dc_dict,
+        cms=[{'recordId': '55515', 'system': 'emu'}],
+        filepath=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm',
+            'presmaster.jpg'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        )
+    filegrp = mets.findall(".//{http://www.loc.gov/METS/}fileGrp")[0]
+    assert(filegrp.attrib["USE"] == "VIEW")

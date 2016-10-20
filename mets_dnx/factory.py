@@ -340,7 +340,7 @@ def build_single_file_mets(ie_dmd_dict=None,
     # build filesec
     filename = os.path.basename(filepath)
     filesec = mets_model.FileSec()
-    filegrp = mets_model.FileGrp(ID="rep1", ADMID="rep1-amd")
+    filegrp = mets_model.FileGrp(ID="rep1", ADMID="rep1-amd", USE="VIEW")
     filesec.append(filegrp)
 
     file_el = mets_model.File(ID='fid1-1', ADMID="fid1-1-amd")
