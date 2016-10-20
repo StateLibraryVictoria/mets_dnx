@@ -102,3 +102,53 @@ def test_all_amdsec_subsections_have_dnx_element():
             subsection = section.find("{http://www.loc.gov/METS/}%s" % tag)
             dnx = subsection.find(".//dnx")
             assert(dnx != None)
+
+def test_structmap_has_version_in_rep_id_for_single_file_sip():
+    """test to confirm that a rep's physical structmap has the "-1" at
+    the end of it"""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_single_file_mets(
+        ie_dmd_dict=ie_dc_dict,
+        filepath=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm',
+            'presmaster.jpg'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        )
+    # print(ET.tounicode(mets, pretty_print=True))
+    structmap = mets.findall("{http://www.loc.gov/METS/}structMap")[0]
+    # print(structmap.tag)
+    assert(structmap.attrib["ID"][-2:] == "-1")
+
+def test_structmap_has_version_in_rep_id_for_multi_file_sip():
+    """test to confirm that a rep's physical structmap has the "-1" at
+    the end of it"""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm'),
+        modified_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'mm'),
+        input_dir=os.path.join(os.path.dirname(
+            os.path.realpath(__file__)),
+            'data',
+            'test_batch_1'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        digital_original=True
+        )
+    structmap = mets.findall("{http://www.loc.gov/METS/}structMap")[0]
+    # print(structmap.tag)
+    assert(structmap.attrib["ID"][-2:] == "-1")

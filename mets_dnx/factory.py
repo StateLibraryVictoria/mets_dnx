@@ -180,7 +180,7 @@ def build_mets(ie_dmd_dict=None,
     file_groups = mets.findall('.//{http://www.loc.gov/METS/}fileGrp')
     for file_group in file_groups:
         rep_id = file_group.attrib['ID']
-        rep_type = mets.find('.//{%s}structMap[@ID="%s"]/{%s}div' % 
+        rep_type = mets.find('.//{%s}structMap[@ID="%s-1"]/{%s}div' % 
             ('http://www.loc.gov/METS/', rep_id, 'http://www.loc.gov/METS/')
             ).attrib['LABEL']
         
@@ -350,7 +350,7 @@ def build_single_file_mets(ie_dmd_dict=None,
     mets.append(filesec)
     
     # build structmap
-    structmap = mets_model.StructMap(ID="rep1", TYPE="Physical")
+    structmap = mets_model.StructMap(ID="rep1-1", TYPE="Physical")
 
     div_1 = mets_model.Div(LABEL="Preservation Master")
     structmap.append(div_1)
