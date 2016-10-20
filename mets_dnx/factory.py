@@ -51,15 +51,34 @@ def build_amdsec(amdsec, tech_sec=None, rights_sec=None,
         if (el.tag == "{http://www.loc.gov/METS/}techMD" and 
                 tech_sec != None):
             xmlData.append(tech_sec)
-        elif (el.tag == "{http://www.loc.gov/METS/}rightsMD" and 
+        elif (el.tag == "{http://www.loc.gov/METS/}techMD" and 
+                tech_sec == None):
+            xmlData.append(ET.Element("dnx",
+                xmlns="http://www.exlibrisgroup.com/dps/dnx"))
+
+        if (el.tag == "{http://www.loc.gov/METS/}rightsMD" and 
                 rights_sec != None):
             xmlData.append(rights_sec)
-        elif (el.tag == "{http://www.loc.gov/METS/}sourceMD" and 
+        elif (el.tag == "{http://www.loc.gov/METS/}rightsMD" and 
+                rights_sec == None):
+            xmlData.append(ET.Element("dnx",
+                xmlns="http://www.exlibrisgroup.com/dps/dnx"))
+
+        if (el.tag == "{http://www.loc.gov/METS/}sourceMD" and 
                 source_sec != None):
             xmlData.append(source_sec)
-        elif (el.tag == "{http://www.loc.gov/METS/}digiprovMD" and 
+        elif (el.tag == "{http://www.loc.gov/METS/}sourceMD" and 
+                source_sec == None):
+            xmlData.append(ET.Element("dnx",
+                xmlns="http://www.exlibrisgroup.com/dps/dnx"))
+
+        if (el.tag == "{http://www.loc.gov/METS/}digiprovMD" and 
                 digiprov_sec != None):
             xmlData.append(digiprov_sec)
+        elif (el.tag == "{http://www.loc.gov/METS/}digiprovMD" and 
+                digiprov_sec == None):
+            xmlData.append(ET.Element("dnx",
+                xmlns="http://www.exlibrisgroup.com/dps/dnx"))
 
 
 def _build_ie_dmd_amd(mets,

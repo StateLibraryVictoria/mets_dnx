@@ -78,3 +78,27 @@ def test_mets_dnx_single_file():
             'IEEntityType': 'periodicIE'}],
         )
     print(ET.tounicode(mets, pretty_print=True))
+
+
+def test_all_amdsec_subsections_have_dnx_element():
+    """Make sure that all amdsec have at least a DNX stub element"""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_single_file_mets(
+        ie_dmd_dict=ie_dc_dict,
+        filepath=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm',
+            'presmaster.jpg'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        )
+    # print(ET.tounicode(mets, pretty_print=True))
+    amd_sections = mets.findall("{http://www.loc.gov/METS/}amdSec")
+    for section in amd_sections:
+        for tag in ('techMD', 'rightsMD', 'sourceMD', 'digiprovMD'):
+            subsection = section.find("{http://www.loc.gov/METS/}%s" % tag)
+            dnx = subsection.find(".//dnx")
+            assert(dnx != None)
