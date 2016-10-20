@@ -152,3 +152,34 @@ def test_structmap_has_version_in_rep_id_for_multi_file_sip():
     structmap = mets.findall("{http://www.loc.gov/METS/}structMap")[0]
     # print(structmap.tag)
     assert(structmap.attrib["ID"][-2:] == "-1")
+
+
+def test_mets_dnx_with_cms():
+    """Test basic construction of METS DNX, with CMS details"""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        cms=[{'recordId': '55515', 'system': 'emu'}],
+        pres_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm'),
+        modified_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'mm'),
+        input_dir=os.path.join(os.path.dirname(
+            os.path.realpath(__file__)),
+            'data',
+            'test_batch_1'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        )
+    print(ET.tounicode(mets, pretty_print=True))
+    cms_id = mets.findall('.//dnx/section[@id="CMS"]/record/key[@id="recordId"]')
+    # print(cms_id[0].tag)
+    # cms_id = mets.find('.//{http://www.exlibrisgroup.com/dps/dnx}section[@ID="CMS"]/{http://www.exlibrisgroup.com/dps/dnx}record/{http://www.exlibrisgroup.com/dps/dnx}key[@recordId]')
+    assert(cms_id[0].text == '55515')

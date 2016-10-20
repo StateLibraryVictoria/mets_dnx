@@ -120,7 +120,9 @@ def _build_ie_dmd_amd(mets,
             or (webHarvesting != None)):
         ie_amd_tech = dnx_factory.build_ie_amdTech(
             generalIECharacteristics=generalIECharacteristics,
-            objectIdentifier=objectIdentifier)
+            objectIdentifier=objectIdentifier,
+            CMS=cms,
+            webHarvesting=webHarvesting)
     else:
         ie_amd_tech = None
     if (accessRightsPolicy != None):
