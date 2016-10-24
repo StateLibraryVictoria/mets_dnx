@@ -328,7 +328,7 @@ def build_single_file_mets(ie_dmd_dict=None,
         'fileCreationDate': created_time}]
 
     file_fixity =  [{
-        'fixityType': 'md5',
+        'fixityType': 'MD5',
         'fixityValue': generate_md5(file_original_location)}]
 
     fl_amd_tech = dnx_factory.build_file_amdTech(
