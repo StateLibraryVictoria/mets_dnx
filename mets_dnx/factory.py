@@ -352,7 +352,7 @@ def build_single_file_mets(ie_dmd_dict=None,
     mets.append(filesec)
     
     # build structmap
-    structmap = mets_model.StructMap(ID="rep1-1", TYPE="Physical")
+    structmap = mets_model.StructMap(ID="rep1-1", TYPE="PHYSICAL")
 
     div_1 = mets_model.Div(LABEL="Preservation Master")
     structmap.append(div_1)

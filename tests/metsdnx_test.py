@@ -204,3 +204,25 @@ def test_filesec_has_use_attrib_for_single_file_sip():
         )
     filegrp = mets.findall(".//{http://www.loc.gov/METS/}fileGrp")[0]
     assert(filegrp.attrib["USE"] == "VIEW")
+
+def test_structmap_for_single_file_mets_has_upper_case_type():
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_single_file_mets(
+        ie_dmd_dict=ie_dc_dict,
+        cms=[{'recordId': '55515', 'system': 'emu'}],
+        filepath=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm',
+            'presmaster.jpg'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        )
+    structmap = mets.findall(".//{http://www.loc.gov/METS/}structMap")[0]
+    # filegrp = mets.findall(".//{http://www.loc.gov/METS/}fileGrp")[0]
+    # assert(filegrp.attrib["USE"] == "VIEW")
+    assert(structmap.attrib["TYPE"] == "PHYSICAL")
+    print(structmap.attrib["TYPE"])
+    assert(structmap.attrib["TYPE"] != "Physical")
