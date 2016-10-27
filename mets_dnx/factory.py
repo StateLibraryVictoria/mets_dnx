@@ -479,7 +479,8 @@ def _parse_json_for_filegrp(filegrp, rep_no, json_doc, input_dir, path=None):
                 # 2016-10-27: Hacky way of getting relative file location
                 # Simply shaving the input_dir off the front of the full path 
                 href = os.path.join(path, item['name'])[len(input_dir) + 1:]
-                file_el = mm.File(ID="fid{}-{}".format(file_no, rep_no))
+                file_el = mm.File(ID="fid{}-{}".format(file_no, rep_no),
+                                ADMID="fid{}-{}-amd".format(file_no, rep_no))
                 flocat = mm.FLocat(LOCTYPE="URL", href=href)
                 file_el.append(flocat)
                 filegrp.append(file_el)

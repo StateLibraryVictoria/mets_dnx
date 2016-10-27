@@ -9,6 +9,11 @@ from mets_dnx import factory as mdf
 
 CURRENT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
+mets_dnx_nsmap = {
+    'mets': 'http://www.loc.gov/METS/',
+    'dnx': 'http://www.exlibrisgroup.com/dps/dnx'
+}
+
 def test_mets_dnx():
     """Test basic construction of METS DNX"""
     ie_dc_dict = {"dc:title": "test title"}
@@ -256,9 +261,11 @@ def test_mets_dnx_with_for_single_rep():
     assert(digital_original_el.text == "true")
 
 
-def test_mets_dnx_with_json():
+def test_mets_dnx_with_json_for_admid_in_filesec_files():
     """For testing new function for building SIP with JSON documents
-    describing the structure and metadata of files."""
+    describing the structure and metadata of files.
+    Specifically testing that all files in the filesec have an ADMID 
+    attrib."""
     ie_dc_dict = {"dc:title": "test title"}
     pm_json = """[{"name": "%s",
                 "type": "directory",
@@ -303,3 +310,7 @@ def test_mets_dnx_with_json():
         input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_2'),
         digital_original=True)
     print(ET.tounicode(mets, pretty_print=True))
+    files_list = mets.findall(".//{http://www.loc.gov/METS/}fileSec"
+        "/{http://www.loc.gov/METS/}fileGrp/{http://www.loc.gov/METS/}file")
+    for file in files_list:
+        assert("ADMID" in file.attrib)
