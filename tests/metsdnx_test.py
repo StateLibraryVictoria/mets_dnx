@@ -297,7 +297,7 @@ def test_mets_dnx_with_json():
                 }]""" % (os.path.join(CURRENT_DIR, "data", "test_batch_2"))
     # print(os.path.join(CURRENT_DIR, "data", "test_batch_2"))
     # print(pm_json)
-    mets = mdf.build_sip_from_json(
+    mets = mdf.build_mets_from_json(
         ie_dmd_dict=ie_dc_dict,
         pres_master_json = pm_json,
         input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_2'),

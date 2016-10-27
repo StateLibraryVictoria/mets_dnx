@@ -551,7 +551,7 @@ def _build_rep_amdsec(mets, rep_no, digital_original, preservation_type):
         digiprov_sec=rep_amd_digiprov)
     mets.append(rep_amdsec)
 
-def build_sip_from_json(ie_dmd_dict=None,
+def build_mets_from_json(ie_dmd_dict=None,
                 pres_master_json=None, 
                 modified_master_json=None,
                 access_derivative_json=None,
