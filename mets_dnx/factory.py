@@ -369,7 +369,7 @@ def build_single_file_mets(ie_dmd_dict=None,
     return mets
 
 def _build_fl_amd_from_json(mets, file_no, rep_no, item, path):
-    fl_amd_sec = mm.AmdSec(ID="fid{}-{}".format(file_no, rep_no))
+    fl_amd_sec = mm.AmdSec(ID="fid{}-{}-amd".format(file_no, rep_no))
     fileOriginalName = None
     fileSizeBytes = None
     md5sum = None

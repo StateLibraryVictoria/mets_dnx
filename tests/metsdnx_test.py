@@ -314,3 +314,7 @@ def test_mets_dnx_with_json_for_admid_in_filesec_files():
         "/{http://www.loc.gov/METS/}fileGrp/{http://www.loc.gov/METS/}file")
     for file in files_list:
         assert("ADMID" in file.attrib)
+    amdsec_list = mets.findall(".//{http://www.loc.gov/METS/}amdSec")
+    for amdsec in amdsec_list:
+        assert("ID" in amdsec.attrib)
+        assert(amdsec.attrib["ID"].endswith("-amd"))
