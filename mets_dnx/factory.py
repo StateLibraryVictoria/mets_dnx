@@ -385,7 +385,7 @@ def _build_fl_amd_from_json(mets, file_no, rep_no, item):
     # if path != None:
     #     gfc['fileOriginalPath'] = os.path.join(path, item["name"])
     # else:
-    gfc['fileOriginalPath'] = item["path"]
+    gfc['fileOriginalPath'] = item['fileOriginalPath']
     for key in item.keys():
         if key == 'name':
             gfc['fileOriginalName'] = item[key]
@@ -457,7 +457,7 @@ def _parse_json_for_filegrp(filegrp, rep_no, json_doc, input_dir):
         try:
             file_el = mm.File(ID="fid{}-{}".format(file_no, rep_no),
                               ADMID="fid{}-{}-amd".format(file_no, rep_no))
-            flocat = mm.FLocat(LOCTYPE="URL", href=item['path'])
+            flocat = mm.FLocat(LOCTYPE="URL", href=item['fileOriginalPath'])
             file_el.append(flocat)
             filegrp.append(file_el)
             file_no += 1
@@ -497,7 +497,7 @@ def _parse_json_for_structmap(div, rep_no, json_doc):
         rep_dict = json_doc
     file_no = 1
     for item in rep_dict:
-        pathlist = os.path.normpath(item['path']).split(os.path.sep)
+        pathlist = os.path.normpath(item['fileOriginalPath']).split(os.path.sep)
         # This above may rely on the OS running the script to be the
         # same type that made the path. Not sure on this, but it sounds like
         # a good unit test case...
@@ -616,7 +616,7 @@ def build_mets_from_json(ie_dmd_dict=None,
         _parse_json_for_structmap(div1, pm_rep_no, pres_master_json)
         structmap_list.append(structmap)
         rep_no += 1
-        
+
     mets.append(filesec)
 
     for structmap in structmap_list:

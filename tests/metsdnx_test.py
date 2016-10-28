@@ -270,14 +270,14 @@ def test_mets_dnx_with_json_for_admid_in_filesec_files():
     
     pm_json = """[
         {"name": "img1.jpg",
-         "path": "path/to/files/img1.jpg",
+         "fileOriginalPath": "path/to/files/img1.jpg",
          "MD5": "aff64bf1391ac627edb3234a422f9a77",
          "fileCreationDate": "1st of January, 1601",
          "fileModificationDate": "1st of January, 1601",
          "label": "Image One",
          "note": "This is a note for image 1"},
          {"name": "img2.jpg",
-         "path": "path/to/files/img2.jpg",
+         "fileOriginalPath": "path/to/files/img2.jpg",
          "MD5": "9d09f20ab8e37e5d32cdd1508b49f0a9",
          "fileCreationDate": "1st of January, 1601",
          "fileModificationDate": "1st of January, 1601",
