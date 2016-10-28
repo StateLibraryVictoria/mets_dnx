@@ -548,6 +548,15 @@ def build_mets_from_json(ie_dmd_dict=None,
         accessRightsPolicy=accessRightsPolicy,
         eventList=eventList)
 
+    # start building fileSec here, but do not append it until after all
+    # the amdSecs have been added.
+    filesec = mm.FileSec()
+
+    # start building list of structmaps here, but do not append it until after
+    # the fileSec has been added.
+    structmap_list = []
+
+
     rep_no = 1
     if pres_master_json != None:
         pmd = json.loads(pres_master_json)
@@ -555,61 +564,62 @@ def build_mets_from_json(ie_dmd_dict=None,
 
         # Build rep AMD Sec
         _build_rep_amdsec(mets, rep_no, digital_original, 'PRESERVATION_MASTER')
-
         # run through json structure and find files, assembling their
         # filepaths along the way
         _parse_json_for_fl_amd(mets, rep_no, pres_master_json)
+        # construct fileSec details for rep
+        filegrp = mm.FileGrp(ID="rep{}".format(pm_rep_no),
+                    ADMID="rep{}-amd".format(pm_rep_no))
+        _parse_json_for_filegrp(filegrp, pm_rep_no, pres_master_json, input_dir)
+        filesec.append(filegrp)
+        # Build the structmap for this rep
+        structmap = mm.StructMap(ID="rep{}-1".format(rep_no), TYPE="PHYSICAL")
+        div1 = mm.Div(LABEL='Preservation Master')
+        structmap.append(div1)
+        mets.append(structmap)
+        _parse_json_for_structmap(div1, pm_rep_no, pres_master_json)
+        structmap_list.append(structmap)
         rep_no += 1
     if modified_master_json != None:
         mm_rep_no = rep_no
         mmd = json.loads(modified_master_json)
         _build_rep_amdsec(mets, rep_no, digital_original, 'MODIFIED_MASTER')
         _parse_json_for_fl_amd(mets, rep_no, modified_master_json)
+        # construct fileSec details for rep
+        filegrp = mm.FileGrp(ID="rep{}".format(mm_rep_no),
+                    ADMID="rep{}-amd".format(mm_rep_no))
+        _parse_json_for_filegrp(filegrp, mm_rep_no, modified_master_json, input_dir)
+        filesec.append(filegrp)
+        # Build the structmap for this rep
+        structmap = mm.StructMap(ID="rep{}-1".format(rep_no), TYPE="PHYSICAL")
+        div1 = mm.Div(LABEL='Preservation Master')
+        structmap.append(div1)
+        mets.append(structmap)
+        _parse_json_for_structmap(div1, pm_rep_no, pres_master_json)
+        structmap_list.append(structmap)
         rep_no += 1
     if access_derivative_json != None:
         add = json.loads(access_derivative_json)
         ad_rep_no = rep_no
         _build_rep_amdsec(mets, rep_no, digital_original, 'ACCESS_DERIVATIVE')
         _parse_json_for_fl_amd(mets, rep_no, access_derivative_json)
-        rep_no += 1
-
-    filesec = mm.FileSec()
-    if pres_master_json != None:
-        filegrp = mm.FileGrp(ID="rep{}".format(pm_rep_no),
-                    ADMID="rep{}-amd".format(pm_rep_no))
-        _parse_json_for_filegrp(filegrp, pm_rep_no, pres_master_json, input_dir)
-        filesec.append(filegrp)
-    if modified_master_json != None:
+        # construct fileSec details for rep
         filegrp = mm.FileGrp(ID="rep{}".format(mm_rep_no),
                     ADMID="rep{}-amd".format(mm_rep_no))
         _parse_json_for_filegrp(filegrp, mm_rep_no, modified_master_json, input_dir)
         filesec.append(filegrp)
-    if access_derivative_json != None:
-        filegrp = mm.FileGrp(ID="rep{}".format(ad_rep_no),
-                    ADMID="rep{}-amd".format(ad_rep_no))
-        _parse_json_for_filegrp(filegrp, ad_rep_no, modified_master_json, input_dir)
-        filesec.append(filegrp)
-
-
-    mets.append(filesec)
-
-
-    # build structmaps
-    structmap = mm.StructMap(ID="rep{}-1".format(rep_no), TYPE="PHYSICAL")
-    if pres_master_json != None:
+        # Build the structmap for this rep
+        structmap = mm.StructMap(ID="rep{}-1".format(rep_no), TYPE="PHYSICAL")
         div1 = mm.Div(LABEL='Preservation Master')
         structmap.append(div1)
         mets.append(structmap)
         _parse_json_for_structmap(div1, pm_rep_no, pres_master_json)
-    if modified_master_json != None:
-        div1 = mm.Div(LABEL='Modified Master')
-        structmap.append(div1)
+        structmap_list.append(structmap)
+        rep_no += 1
+        
+    mets.append(filesec)
+
+    for structmap in structmap_list:
         mets.append(structmap)
-        _parse_json_for_structmap(div1, mm_rep_no, modified_master_json)
-    if access_derivative_json != None:
-        div1 = mm.Div(LABEL='Access Derivative')
-        structmap.append(div1)
-        mets.append(structmap)
-        _parse_json_for_structmap(div1, ad_rep_no, access_derivative_json)
 
     return mets
