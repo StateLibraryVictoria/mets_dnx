@@ -382,12 +382,9 @@ def _build_fl_amd_from_json(mets, file_no, rep_no, item):
     gfc = {} # general file characteristics
     fixity = {}
     events = {}
-    # if path != None:
-    #     gfc['fileOriginalPath'] = os.path.join(path, item["name"])
-    # else:
     gfc['fileOriginalPath'] = item['fileOriginalPath']
     for key in item.keys():
-        if key == 'name':
+        if key == 'fileOriginalName':
             gfc['fileOriginalName'] = item[key]
         if key == 'fileSizeBytes':
             gfc['fileSizeBytes'] = item[key]
@@ -478,7 +475,7 @@ def _recursively_build_divs(div, pathlist, rep_no, file_no, json_doc):
             if 'label' in rep_dict.keys():
                 label = rep_dict['label']
             else:
-                label = rep_dict['name']
+                label = rep_dict['fileOriginalName']
             newdiv = mm.Div(LABEL="{}".format(label),
                             TYPE="FILE")
             fptr = mm.Fptr(FILEID="fid{}-{}".format(file_no, rep_no))
