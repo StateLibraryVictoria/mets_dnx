@@ -267,43 +267,23 @@ def test_mets_dnx_with_json_for_admid_in_filesec_files():
     Specifically testing that all files in the filesec have an ADMID 
     attrib."""
     ie_dc_dict = {"dc:title": "test title"}
-    pm_json = """[{"name": "%s",
-                "type": "directory",
-                "children":
-                    [{"name": "path",
-                      "type": "directory",
-                      "children":
-                        [{"name": "to",
-                          "type": "directory",
-                          "children":
-                            [{"name": "files",
-                              "type": "directory",
-                              "children":
-                                [{"name": "img1.jpg",
-                                  "type": "file",
-                                  "MD5": "aff64bf1391ac627edb3234a422f9a77",
-                                  "fileCreationDate": "1st of January, 1601",
-                                  "fileModificationDate": "1st of January, 1601",
-                                  "label": "Image One",
-                                  "note": "This is a note for image 1"},
-                                 {"name": "img2.jpg",
-                                  "type": "file",
-                                  "MD5": "9d09f20ab8e37e5d32cdd1508b49f0a9",
-                                  "fileCreationDate": "1st of January, 1601",
-                                  "fileModificationDate": "1st of January, 1601",
-                                  "label": "Image Two",
-                                  "note": "This is a note for image 2"
-                                  }
-                                ]
-                             }
-                            ]
-                          }
-                        ]
-                     }
-                    ]
-                }]""" % (os.path.join(CURRENT_DIR, "data", "test_batch_2"))
-    # print(os.path.join(CURRENT_DIR, "data", "test_batch_2"))
-    # print(pm_json)
+    
+    pm_json = """[
+        {"name": "img1.jpg",
+         "path": "path/to/files/img1.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image One",
+         "note": "This is a note for image 1"},
+         {"name": "img2.jpg",
+         "path": "path/to/files/img2.jpg",
+         "MD5": "9d09f20ab8e37e5d32cdd1508b49f0a9",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Two",
+         "note": "This is a note for image 2"}
+    ]"""
     mets = mdf.build_mets_from_json(
         ie_dmd_dict=ie_dc_dict,
         pres_master_json = pm_json,

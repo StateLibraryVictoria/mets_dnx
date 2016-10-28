@@ -368,7 +368,8 @@ def build_single_file_mets(ie_dmd_dict=None,
 
     return mets
 
-def _build_fl_amd_from_json(mets, file_no, rep_no, item, path):
+
+def _build_fl_amd_from_json(mets, file_no, rep_no, item):
     fl_amd_sec = mm.AmdSec(ID="fid{}-{}-amd".format(file_no, rep_no))
     fileOriginalName = None
     fileSizeBytes = None
@@ -381,10 +382,10 @@ def _build_fl_amd_from_json(mets, file_no, rep_no, item, path):
     gfc = {} # general file characteristics
     fixity = {}
     events = {}
-    if path != None:
-        gfc['fileOriginalPath'] = os.path.join(path, item["name"])
-    else:
-        gfc['fileOriginalPath'] = item["name"]
+    # if path != None:
+    #     gfc['fileOriginalPath'] = os.path.join(path, item["name"])
+    # else:
+    gfc['fileOriginalPath'] = item["path"]
     for key in item.keys():
         if key == 'name':
             gfc['fileOriginalName'] = item[key]
@@ -406,13 +407,14 @@ def _build_fl_amd_from_json(mets, file_no, rep_no, item, path):
             events = item[key]
 
     # Check the supplied fixity to make sure it can be reproduced
-    fileSizeBytes = None
-    if md5sum and fileOriginalpath:
-        fileSizeBytes = os.path.getsize(fileOriginalpath)
-        checksum = generate_md5(fileOriginalpath)
-        if md5sum != checksum:
-            raise ValueError("could not reproduce MD5 sum for {}: Expected {}, got {}".format(
-                fileOriginalPath, md5sum, checksum))
+    # TODO: Come back to this!
+    # fileSizeBytes = None
+    # if md5sum and fileOriginalpath:
+    #     fileSizeBytes = os.path.getsize(fileOriginalpath)
+    #     checksum = generate_md5(fileOriginalpath)
+    #     if md5sum != checksum:
+    #         raise ValueError("could not reproduce MD5 sum for {}: Expected {}, got {}".format(
+    #             fileOriginalPath, md5sum, checksum))
 
     # reset any empty dicts to None value
     if len(gfc) == 0:
@@ -426,23 +428,26 @@ def _build_fl_amd_from_json(mets, file_no, rep_no, item, path):
         generalFileCharacteristics=[gfc],
         fileFixity=[fixity])
     fl_amd_digiprov = dnx_factory.build_ie_amdDigiprov(
-        event=events) # yes, the call to ie amdDigiprov is intentional,
+        event=events)
+    # yes, the call to ie amdDigiprov is intentional,
     # as we don't yet have a file digiprov builder. Should be fine though.
 
     build_amdsec(fl_amd_sec, tech_sec=fl_amd_tech, digiprov_sec=fl_amd_digiprov)
     mets.append(fl_amd_sec)
 
 
-    fileSizeBytes = None
-    if md5sum and fileOriginalpath:
-        fileSizeBytes = os.path.getsize(fileOriginalpath)
-        checksum = generate_md5(fileOriginalpath)
-        if md5sum != checksum:
-            raise ValueError("could not reproduce MD5 sum for {}: Expected {}, got {}".format(
-                fileOriginalPath, md5sum, checksum))
+def _parse_json_for_fl_amd(mets, rep_no, json_doc):
+    if type(json_doc) == str:
+        rep_dict = json.loads(json_doc)
+    else:
+        rep_dict = json_doc
+    file_no = 1
+    for item in rep_dict:
+        _build_fl_amd_from_json(mets, file_no, rep_no, item)
+        file_no += 1
 
 
-def _parse_json(mets, rep_no, json_doc, path=None):
+def _parse_json_for_filegrp(filegrp, rep_no, json_doc, input_dir):
     if type(json_doc) == str:
         rep_dict = json.loads(json_doc)
     else:
@@ -450,87 +455,54 @@ def _parse_json(mets, rep_no, json_doc, path=None):
     file_no = 1
     for item in rep_dict:
         try:
-            if item['type'] == 'file':
-                _build_fl_amd_from_json(mets, file_no, rep_no, item, path)
-                # Add file number to assist with filesec construction
-                item['file_no'] = file_no
-                file_no += 1
-            elif item['type'] == 'directory':
-                if path == None:
-                    path = os.path.join(item['name'])
-                else:
-                    path = os.path.join(path, item['name'])
-                _parse_json(mets, rep_no, item['children'], path)
-            else:
-                raise ValueError("This item does not have a valid type value: {}".format(item))
+            file_el = mm.File(ID="fid{}-{}".format(file_no, rep_no),
+                              ADMID="fid{}-{}".format(file_no, rep_no))
+            flocat = mm.FLocat(LOCTYPE="URL", href=item['path'])
+            file_el.append(flocat)
+            filegrp.append(file_el)
+            file_no += 1
         except KeyError:
-            print("The following json does not have a 'type' value: {}".format(item))
+            print("The following json was missing an important value: {}".format(item))
 
 
-def _parse_json_for_filegrp(filegrp, rep_no, json_doc, input_dir, path=None):
+def _recursively_build_divs(div, pathlist, rep_no, file_no, json_doc):
+    if type(json_doc) == str:
+        rep_dict = json.loads(json_doc)
+    else:
+        rep_dict = json_doc
+    newdiv = div.find('./{http://www.loc.gov/METS/}div[@LABEL="%s"]' % (pathlist[0]))
+    if newdiv != None:
+        _recursively_build_divs(newdiv, pathlist[1:], rep_no, file_no, json_doc)
+    else:
+        if len(pathlist) == 1:
+            if 'label' in rep_dict.keys():
+                label = rep_dict['label']
+            else:
+                label = rep_dict['name']
+            newdiv = mm.Div(LABEL="{}".format(label),
+                            TYPE="FILE")
+            fptr = mm.Fptr(FILEID="fid{}-{}".format(file_no, rep_no))
+            newdiv.append(fptr)
+            div.append(newdiv)
+        else:
+            newdiv = mm.Div(LABEL="{}".format(pathlist[0]))
+            div.append(newdiv)
+            _recursively_build_divs(newdiv, pathlist[1:], rep_no, file_no, rep_dict)
+
+
+def _parse_json_for_structmap(div, rep_no, json_doc):
     if type(json_doc) == str:
         rep_dict = json.loads(json_doc)
     else:
         rep_dict = json_doc
     file_no = 1
     for item in rep_dict:
-        try:
-            if item['type'] == 'file':
-                # 2016-10-27: Hacky way of getting relative file location
-                # Simply shaving the input_dir off the front of the full path 
-                href = os.path.join(path, item['name'])[len(input_dir) + 1:]
-                file_el = mm.File(ID="fid{}-{}".format(file_no, rep_no),
-                                ADMID="fid{}-{}-amd".format(file_no, rep_no))
-                flocat = mm.FLocat(LOCTYPE="URL", href=href)
-                file_el.append(flocat)
-                filegrp.append(file_el)
-                file_no += 1
-            elif item['type'] == 'directory':
-                if path == None:
-                    path = os.path.join(item['name'])
-                else:
-                    path = os.path.join(path, item['name'])
-                _parse_json_for_filegrp(filegrp, rep_no, item['children'], input_dir, path)
-            else:
-                raise ValueError("This item does not have a valid type value: {}".format(item))
-        except KeyError:
-            print("The following json does not have a 'type' value: {}".format(item))
+        pathlist = os.path.normpath(item['path']).split(os.path.sep)
+        # This above may rely on the OS running the script to be the
+        # same type that made the path. Not sure on this, but it sounds like
+        # a good unit test case...
+        _recursively_build_divs(div, pathlist, rep_no, file_no, item)
 
-
-def _parse_json_for_structmap(div, rep_no, json_doc, path=None):
-    if type(json_doc) == str:
-        rep_dict = json.loads(json_doc)
-    else:
-        rep_dict = json_doc
-    file_no = 1
-    for item in rep_dict:
-        try:
-            if item['type'] == 'file':
-                # _build_fl_amd_from_json(mets, file_no, rep_no, item, path)
-                if 'label' in item.keys():
-                    label = item['label']
-                else:
-                    label = item['name']
-                div2 = mm.Div(TYPE="FILE", LABEL=label)
-                div.append(div2)
-
-                fptr = mm.Fptr(FILEID="fid{}-{}".format(file_no, rep_no))
-                div2.append(fptr)
-                
-                file_no += 1
-            elif item['type'] == 'directory':
-                if path == None:
-                    path = os.path.join(item['name'])
-                    div2 = mm.Div(TYPE="FOLDER", LABEL=item['name'])
-                else:
-                    path = os.path.join(path, item['name'])
-                    div2 = mm.Div(TYPE="FOLDER", LABEL=item['name'])
-                div.append(div2)
-                _parse_json_for_structmap(div2, rep_no, item['children'], path)
-            else:
-                raise ValueError("This item does not have a valid type value: {}".format(item))
-        except KeyError:
-            print("The following json does not have a 'type' value: {}".format(item))
 
 
 def _build_rep_amdsec(mets, rep_no, digital_original, preservation_type):
@@ -580,32 +552,29 @@ def build_mets_from_json(ie_dmd_dict=None,
     if pres_master_json != None:
         pmd = json.loads(pres_master_json)
         pm_rep_no = rep_no
+
         # Build rep AMD Sec
         _build_rep_amdsec(mets, rep_no, digital_original, 'PRESERVATION_MASTER')
+
         # run through json structure and find files, assembling their
         # filepaths along the way
-        _parse_json(mets, rep_no, pres_master_json)
+        _parse_json_for_fl_amd(mets, rep_no, pres_master_json)
         rep_no += 1
     if modified_master_json != None:
         mm_rep_no = rep_no
         mmd = json.loads(modified_master_json)
         _build_rep_amdsec(mets, rep_no, digital_original, 'MODIFIED_MASTER')
-        # _build_fl_amd_from_json(mets, rep_no, modified_master_json)
-        _parse_json(mets, rep_no, modified_master_json)
+        _parse_json_for_fl_amd(mets, rep_no, modified_master_json)
         rep_no += 1
     if access_derivative_json != None:
         add = json.loads(access_derivative_json)
         ad_rep_no = rep_no
         _build_rep_amdsec(mets, rep_no, digital_original, 'ACCESS_DERIVATIVE')
-        # _build_fl_amd_from_json(mets, rep_no, access_derivative_json)
-        _parse_json(mets, rep_no, access_derivative_json)
+        _parse_json_for_fl_amd(mets, rep_no, access_derivative_json)
         rep_no += 1
 
-    # build filesec
-    # print(pres_master_json)
     filesec = mm.FileSec()
     if pres_master_json != None:
-        # print("found presmasterdir")
         filegrp = mm.FileGrp(ID="rep{}".format(pm_rep_no),
                     ADMID="rep{}-amd".format(pm_rep_no))
         _parse_json_for_filegrp(filegrp, pm_rep_no, pres_master_json, input_dir)
