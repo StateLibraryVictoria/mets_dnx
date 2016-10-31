@@ -394,6 +394,8 @@ def _build_fl_amd_from_json(mets, file_no, rep_no, item):
             gfc['fileModificationDate'] = item[key]
         if key == 'note':
             gfc['note'] = item[key]
+        if key == 'label':
+            gfc['label'] = item[key]
 
         # fixity values
         if key.upper() == 'MD5':
