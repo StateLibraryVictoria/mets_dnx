@@ -193,9 +193,9 @@ def build_mets(ie_dmd_dict=None,
         elif rep_type == 'Modified Master':
             pres_type = 'MODIFIED_MASTER'
             pres_location = modified_master_dir
-        elif rep_type == 'Access Derivative':
+        elif rep_type == 'Derivative Copy':
             pres_location = access_derivative_dir
-            pres_type = 'ACCESS_DERIVATIVE'
+            pres_type = 'DERIVATIVE_COPY'
         else:
             pres_type = None
             pres_location = '.'
@@ -600,7 +600,7 @@ def build_mets_from_json(ie_dmd_dict=None,
     if access_derivative_json != None:
         add = json.loads(access_derivative_json)
         ad_rep_no = rep_no
-        _build_rep_amdsec(mets, rep_no, digital_original, 'ACCESS_DERIVATIVE')
+        _build_rep_amdsec(mets, rep_no, digital_original, 'DERIVATIVE_COPY')
         _parse_json_for_fl_amd(mets, rep_no, access_derivative_json)
         # construct fileSec details for rep
         filegrp = mm.FileGrp(ID="rep{}".format(mm_rep_no),
