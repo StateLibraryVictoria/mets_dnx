@@ -2,13 +2,7 @@ import hashlib
 import json
 import os
 import re
-import sys
 import time
-
-if sys.version_info[0] >= 3:
-    from urllib.parse import quote
-else:
-    from urlparse import quote
 
 from lxml import etree as ET
 
@@ -17,17 +11,6 @@ from pymets import mets_factory as mf
 from pymets import mets_model as mm
 from pydnx import factory as dnx_factory
 
-
-def percent_encode_hrefs(mets):
-    flocats = mets.xpath('.//mets:FLocat', namespaces={'mets': 'http://www.loc.gov/METS/'})
-    for flocat in flocats:
-        flocat.attrib['{http://www.w3.org/1999/xlink}href'] = \
-            quote(flocat.attrib['{http://www.w3.org/1999/xlink}href'])
-
-# 2017-01-30: Added percent encoding to keep rosetta_mets.xsd happy.
-# Rosetta was still finding the files, but was throwing up a warning.
-# Rosetta only supports local references as of version 5.1, so no need
-# yet to handle external addresses.
 def generate_md5(filepath, block_size=2**20):
     """For producing md5 checksums for a file at a specified filepath."""
     m = hashlib.md5()
@@ -288,7 +271,6 @@ def build_mets(ie_dmd_dict=None,
                 'ie[0-9]+\-rep([0-9])+\-file([0-9]+)',
                 r'fid\2-\1',
                 element.attrib['FILEID'])
-    percent_encode_hrefs(mets)
     return mets
 
 
@@ -383,7 +365,7 @@ def build_single_file_mets(ie_dmd_dict=None,
     div_2.append(fptr)
 
     mets.append(structmap)
-    percent_encode_hrefs(mets)
+
     return mets
 
 
@@ -639,5 +621,4 @@ def build_mets_from_json(ie_dmd_dict=None,
     for structmap in structmap_list:
         mets.append(structmap)
 
-    percent_encode_hrefs(mets)
     return mets

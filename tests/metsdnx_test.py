@@ -332,31 +332,3 @@ def test_mets_dnx_deriv_copy_gets_preservationType():
         )[0]
     assert (ad_pres_type.text == "DERIVATIVE_COPY")
     # print(ad_pres_type)
-
-
-
-def test_mets_dnx_percent_encoded_file():
-    """Test basic construction of METS DNX to make sure that FLocats with
-    filepaths containing spaces or special characters are properly escapted"""
-    ie_dc_dict = {"dc:title": "test title"}
-    mets = mdf.build_mets(
-        ie_dmd_dict=ie_dc_dict,
-        pres_master_dir=os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'data',
-            'test_batch_3',
-            'pm'),
-        input_dir=os.path.join(os.path.dirname(
-            os.path.realpath(__file__)),
-            'data',
-            'test_batch_3'),
-        generalIECharacteristics=[{
-            'submissionReason': 'bornDigitalContent',
-            'IEEntityType': 'periodicIE'}],
-        )
-    print(ET.tounicode(mets, pretty_print=True))
-    # flocat = mets.xpath('.//{http://www.loc.gov/METS/}FLocat')[0]
-    flocat = mets.xpath('.//mets:FLocat', namespaces={'mets': 'http://www.loc.gov/METS/'})[0]
-    # for flocat in flocats:
-    print(flocat.attrib['{http://www.w3.org/1999/xlink}href'])
-            
