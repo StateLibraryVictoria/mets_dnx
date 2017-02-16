@@ -227,6 +227,8 @@ def build_mets(ie_dmd_dict=None,
             file_original_location = os.path.join(input_dir,
                 fl.find('./{http://www.loc.gov/METS/}FLocat').attrib[
                         '{http://www.w3.org/1999/xlink}href'])
+            file_original_name = os.path.normpath(file_original_location).split(os.path.sep)[-1]
+            file_label = os.path.splitext(file_original_name)[0]
             file_size_bytes = os.path.getsize(file_original_location)
             last_modified = time.strftime(
                     "%Y-%m-%dT%H:%M:%S",
@@ -238,7 +240,9 @@ def build_mets(ie_dmd_dict=None,
                 'fileOriginalPath': file_original_location,
                 'fileSizeBytes': str(file_size_bytes),
                 'fileModificationDate': last_modified,
-                'fileCreationDate': created_time}]
+                'fileCreationDate': created_time,
+                'fileOriginalName': file_original_name,
+                'label': file_label}]
 
             file_fixity =  [{
                 'fixityType': 'MD5',
@@ -271,6 +275,24 @@ def build_mets(ie_dmd_dict=None,
                 'ie[0-9]+\-rep([0-9])+\-file([0-9]+)',
                 r'fid\2-\1',
                 element.attrib['FILEID'])
+
+    # 2017-02-16 (SM): Modify the file label in the structmaps so that it does
+    # not contain file extensions. This is an NDHA requirement, so I am 
+    # reluctant to put this on the actual METS factory level.
+    # 2017-02-16 (SM): Add an order count to the divs in the structmap.
+    struct_maps = mets.findall('./{http://www.loc.gov/METS/}structMap')
+    for struct_map in struct_maps:
+        top_div_count = 0
+        top_divs = struct_map.findall('./{http://www.loc.gov/METS/}div')
+        for top_div in top_divs:
+            top_div_count += 1
+            top_div.attrib['ORDER'] = str(top_div_count)
+            lower_div_count = 0
+            file_divs = top_div.findall('./{http://www.loc.gov/METS/}div[@TYPE="FILE"]')
+            for file_div in file_divs:
+                lower_div_count += 1
+                file_div.attrib['ORDER'] = str(lower_div_count)
+                file_div.attrib["LABEL"] = os.path.splitext(file_div.attrib["LABEL"])[0]
     return mets
 
 
@@ -315,6 +337,8 @@ def build_single_file_mets(ie_dmd_dict=None,
     # Build file amdsec
     fl_amdsec = ET.Element("{http://www.loc.gov/METS/}amdSec", ID="fid1-1-amd")
     file_original_location = filepath
+    file_original_name = os.path.normpath(file_original_location).split(os.path.sep)[-1]
+    file_label = os.path.splitext(file_original_name)[0]
     file_size_bytes = os.path.getsize(file_original_location)
     last_modified = time.strftime(
             "%Y-%m-%dT%H:%M:%S",
@@ -326,7 +350,9 @@ def build_single_file_mets(ie_dmd_dict=None,
         'fileOriginalPath': file_original_location,
         'fileSizeBytes': str(file_size_bytes),
         'fileModificationDate': last_modified,
-        'fileCreationDate': created_time}]
+        'fileCreationDate': created_time,
+        'fileOriginalName': file_original_name,
+        'label': file_label}]
 
     file_fixity =  [{
         'fixityType': 'MD5',
@@ -340,6 +366,7 @@ def build_single_file_mets(ie_dmd_dict=None,
 
     # build filesec
     filename = os.path.basename(filepath)
+    file_label = os.path.splitext(filename)[0]
     filesec = mm.FileSec()
     filegrp = mm.FileGrp(ID="rep1", ADMID="rep1-amd", USE="VIEW")
     filesec.append(filegrp)
@@ -355,10 +382,10 @@ def build_single_file_mets(ie_dmd_dict=None,
     # build structmap
     structmap = mm.StructMap(ID="rep1-1", TYPE="PHYSICAL")
 
-    div_1 = mm.Div(LABEL="Preservation Master")
+    div_1 = mm.Div(LABEL="Preservation Master", ORDER="1")
     structmap.append(div_1)
 
-    div_2 = mm.Div(TYPE="FILE", LABEL=filename)
+    div_2 = mm.Div(TYPE="FILE", LABEL=file_label, ORDER="1")
     div_1.append(div_2)
 
     fptr = mm.Fptr(FILEID='fid1-1')
@@ -395,7 +422,7 @@ def _build_fl_amd_from_json(mets, file_no, rep_no, item):
         if key == 'note':
             gfc['note'] = item[key]
         if key == 'label':
-            gfc['label'] = item[key]
+            gfc['label'] = os.path.splitext(item[key])[0]
 
         # fixity values
         if key.upper() == 'MD5':
@@ -475,7 +502,7 @@ def _recursively_build_divs(div, pathlist, rep_no, file_no, json_doc):
     else:
         if len(pathlist) == 1:
             if 'label' in rep_dict.keys():
-                label = rep_dict['label']
+                label = os.path.splitext(rep_dict['label'])[0]
             else:
                 label = rep_dict['fileOriginalName']
             newdiv = mm.Div(LABEL="{}".format(label),

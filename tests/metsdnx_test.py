@@ -332,3 +332,250 @@ def test_mets_dnx_deriv_copy_gets_preservationType():
         )[0]
     assert (ad_pres_type.text == "DERIVATIVE_COPY")
     # print(ad_pres_type)
+
+
+def test_file_original_path_exists():
+    """Test to make sure the fileOriginalPath is added to the 
+    generalFileCharacteristics sections"""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm'),
+        modified_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'mm'),
+        input_dir=os.path.join(os.path.dirname(
+            os.path.realpath(__file__)),
+            'data',
+            'test_batch_1'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        )
+    file_gen_chars_list = mets.findall('.//section[@id="generalFileCharacteristics"]')
+    for el in file_gen_chars_list:
+        fop = el.findall('./record/key[@id="fileOriginalName"]')
+        assert(fop[0].text in ('presmaster.jpg', 'modifiedmaster.jpg'))
+
+
+def test_gfc_file_label_exists():
+    """Test to make sure the label is added to the 
+    generalFileCharacteristics sections, and that it onlye includes the
+    filename up to the extension."""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm'),
+        modified_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'mm'),
+        input_dir=os.path.join(os.path.dirname(
+            os.path.realpath(__file__)),
+            'data',
+            'test_batch_1'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        )
+    file_gen_chars_list = mets.findall('.//section[@id="generalFileCharacteristics"]')
+    for el in file_gen_chars_list:
+        fop = el.findall('./record/key[@id="label"]')
+        assert(fop[0].text in ('presmaster', 'modifiedmaster'))
+    print(ET.tounicode(mets, pretty_print=True))
+
+
+def test_structmap_file_label_exists():
+    """Test to make sure the label is added to the 
+    structMap file-level divs, and that it only includes the
+    filename up to the extension."""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm'),
+        modified_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'mm'),
+        input_dir=os.path.join(os.path.dirname(
+            os.path.realpath(__file__)),
+            'data',
+            'test_batch_1'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        )
+    struct_maps = mets.findall('./{http://www.loc.gov/METS/}structMap')
+    for struct_map in struct_maps:
+        file_divs = struct_map.findall('.//{http://www.loc.gov/METS/}div[@TYPE="FILE"]')
+        for file_div in file_divs:
+            assert(file_div.attrib['LABEL'] in ('presmaster', 'modifiedmaster'))
+    print(ET.tounicode(mets, pretty_print=True))
+
+
+
+def test_labels_in_mets_dnx_single_file():
+    """Test that labels are added to generalFileCharactierists secion and
+    structMap, and that they are populated with the filenames (sans extensions)"""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_single_file_mets(
+        ie_dmd_dict=ie_dc_dict,
+        filepath=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm',
+            'presmaster.jpg'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        )
+    
+    gfc = mets.findall('.//section[@id="generalFileCharacteristics"]/record')[0]
+    # since we're doing this, let's also test the FileOriginalName key
+    file_original_name =  gfc.findall('./key[@id="fileOriginalName"]')[0]
+    assert(file_original_name.text == 'presmaster.jpg')
+    label = gfc.findall('./key[@id="label"]')[0]
+    assert(label.text == 'presmaster')
+    struct_map = mets.findall('./{http://www.loc.gov/METS/}structMap')[0]
+    file_div = struct_map.findall('.//{http://www.loc.gov/METS/}div[@TYPE="FILE"]')[0]
+    assert(file_div.attrib['LABEL'] == 'presmaster')
+    # assert(gfc_file_original_name == 'presmaster.jpg')
+    # print(ET.tounicode(mets, pretty_print=True))
+
+def test_digtial_original_dnx():
+    """Test that the digitalOriginal value is being properly translated
+    from a boolean input to a lower-case string of 'true' or 'false'"""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm'),
+        modified_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'mm'),
+        input_dir=os.path.join(os.path.dirname(
+            os.path.realpath(__file__)),
+            'data',
+            'test_batch_1'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        digital_original=True
+        )
+    
+    grc = mets.findall('.//section[@id="generalRepCharacteristics"]')[0]
+    # print(ET.tounicode(grc[0], pretty_print=True))
+    do = grc.findall('.//key[@id="DigitalOriginal"]')[0]
+    assert (do.text == 'true')
+    # for grc in general_rep_characteristics:
+    #     assert(grc.text == 'true')
+
+def test_digtial_original_dnx_single_file():
+    """Test that the digitalOriginal value is being properly translated
+    from a boolean input to a lower-case string of 'true' or 'false' for a
+    single-file METS"""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_single_file_mets(
+        ie_dmd_dict=ie_dc_dict,
+        filepath=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm',
+            'presmaster.jpg'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        digital_original=True
+        )
+    grc = mets.findall('.//section[@id="generalRepCharacteristics"]')[0]
+    # print(ET.tounicode(grc[0], pretty_print=True))
+    do = grc.findall('.//key[@id="DigitalOriginal"]')[0]
+    assert (do.text == 'true')
+    # for grc in general_rep_characteristics:
+    #     assert(grc.text == 'true')
+    print(ET.tounicode(mets, pretty_print=True))
+
+
+def test_structmap_order_attrib_single_file():
+    """Test for order to be included in single file METS structmaps
+    At both div levels"""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_single_file_mets(
+        ie_dmd_dict=ie_dc_dict,
+        filepath=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm',
+            'presmaster.jpg'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        digital_original=True
+        )
+    structmap_divs = mets.findall('.//{http://www.loc.gov/METS/}structMap/{http://www.loc.gov/METS/}div')
+    for div in structmap_divs:
+        print(div.attrib["ORDER"])
+        assert("ORDER" in div.attrib.keys())
+    # grc = mets.findall('.//section[@id="generalRepCharacteristics"]')[0]
+    # print(ET.tounicode(grc[0], pretty_print=True))
+    # do = grc.findall('.//key[@id="DigitalOriginal"]')[0]
+    # assert (do.text == 'true')
+    # for grc in general_rep_characteristics:
+    #     assert(grc.text == 'true')
+    # print(ET.tounicode(mets, pretty_print=True))
+
+
+def test_structmap_order_attrib():
+    """Test for order to be included in single file METS structmaps
+    At both div levels"""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm'),
+        modified_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'mm'),
+        input_dir=os.path.join(os.path.dirname(
+            os.path.realpath(__file__)),
+            'data',
+            'test_batch_1'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        digital_original=True
+        )
+    print(ET.tounicode(mets, pretty_print=True))
+    structmap_divs = mets.findall('.//{http://www.loc.gov/METS/}structMap/{http://www.loc.gov/METS/}div')
+    for div in structmap_divs:
+        print(div.attrib["ORDER"])
+        assert("ORDER" in div.attrib.keys())
