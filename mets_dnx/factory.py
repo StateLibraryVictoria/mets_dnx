@@ -386,7 +386,7 @@ def build_single_file_mets(ie_dmd_dict=None,
     div_1 = mm.Div(LABEL="Preservation Master", ORDER="1")
     structmap.append(div_1)
 
-    div_2 = mm.Div(LABEL=file_label, ORDER="1")
+    div_2 = mm.Div(LABEL=file_label, ORDER="1", TYPE="FILE")
     div_1.append(div_2)
 
     fptr = mm.Fptr(FILEID='fid1-1')
