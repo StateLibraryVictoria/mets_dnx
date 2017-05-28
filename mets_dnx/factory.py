@@ -522,8 +522,9 @@ def _parse_json_for_structmap(div, rep_no, json_doc):
         rep_dict = json.loads(json_doc)
     else:
         rep_dict = json_doc
-    file_no = 1
+    file_no = 0
     for item in rep_dict:
+        file_no += 1
         pathlist = os.path.normpath(item['fileOriginalPath']).split(os.path.sep)
         # This above may rely on the OS running the script to be the
         # same type that made the path. Not sure on this, but it sounds like

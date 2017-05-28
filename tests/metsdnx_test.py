@@ -617,3 +617,40 @@ def test_mets_dnx_with_json_supply_filesizebytes():
     # print(bytes_list)
     for element in bytes_list:
         assert element.text in ['119191', '119192']
+
+
+def test_mets_dnx_with_json_structmap_IDs():
+    """Make sure that each div in the structMap gets the right ID
+    a bug was found where all fptr elements in the structMap got the
+    fid of the first file. This is to check that doesn't happen anymore."""
+    ie_dc_dict = {"dc:title": "test title"}
+    
+    pm_json = """[
+        {"fileOriginalName": "img1.jpg",
+         "fileOriginalPath": "path/to/files/img1.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image One",
+         "note": "This is a note for image 1",
+         "fileSizeBytes": "119191"},
+         {"fileOriginalName": "img2.jpg",
+         "fileOriginalPath": "path/to/files/img2.jpg",
+         "MD5": "9d09f20ab8e37e5d32cdd1508b49f0a9",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Two",
+         "note": "This is a note for image 2",
+         "fileSizeBytes": "119192"}
+    ]"""
+    mets = mdf.build_mets_from_json(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_json = pm_json,
+        input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_2'),
+        digital_original=True)
+    fptr_list = mets.findall('.//{http://www.loc.gov/METS/}fptr')
+    # print(fptr_list)
+    file_ids = []
+    for fptr in fptr_list:
+        file_ids.append(fptr.attrib['FILEID'])
+    assert len(file_ids) == len(set(file_ids))
