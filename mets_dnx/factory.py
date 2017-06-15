@@ -604,8 +604,10 @@ def build_mets_from_json(ie_dmd_dict=None,
         structmap = mm.StructMap(ID="rep{}-1".format(rep_no), TYPE="PHYSICAL")
         div1 = mm.Div(LABEL='Preservation Master')
         structmap.append(div1)
+        div2 = mm.Div(LABEL='Table of Contents')
+        div1.append(div2)
         mets.append(structmap)
-        _parse_json_for_structmap(div1, pm_rep_no, pres_master_json)
+        _parse_json_for_structmap(div2, pm_rep_no, pres_master_json)
         structmap_list.append(structmap)
         rep_no += 1
     if modified_master_json != None:
@@ -622,8 +624,10 @@ def build_mets_from_json(ie_dmd_dict=None,
         structmap = mm.StructMap(ID="rep{}-1".format(rep_no), TYPE="PHYSICAL")
         div1 = mm.Div(LABEL='Preservation Master')
         structmap.append(div1)
+        div2 = mm.Div(LABEL='Table of Contents')
+        div1.append(div2)
         mets.append(structmap)
-        _parse_json_for_structmap(div1, pm_rep_no, pres_master_json)
+        _parse_json_for_structmap(div2, pm_rep_no, pres_master_json)
         structmap_list.append(structmap)
         rep_no += 1
     if access_derivative_json != None:
@@ -640,8 +644,10 @@ def build_mets_from_json(ie_dmd_dict=None,
         structmap = mm.StructMap(ID="rep{}-1".format(rep_no), TYPE="PHYSICAL")
         div1 = mm.Div(LABEL='Preservation Master')
         structmap.append(div1)
+        div2 = mm.Div(LABEL='Table of Contents')
+        div1.append(div2)
         mets.append(structmap)
-        _parse_json_for_structmap(div1, pm_rep_no, pres_master_json)
+        _parse_json_for_structmap(div2, pm_rep_no, pres_master_json)
         structmap_list.append(structmap)
         rep_no += 1
 

@@ -691,10 +691,54 @@ def test_mets_dnx_with_json_structmap_IDs():
         pres_master_json = pm_json,
         input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_3'),
         digital_original=True)
-    div_list = mets.findall('.//{http://www.loc.gov/METS/}div/{http://www.loc.gov/METS/}div')
+    div_list = mets.findall('.//{http://www.loc.gov/METS/}div/{http://www.loc.gov/METS/}div//{http://www.loc.gov/METS/}div')
     # print(fptr_list)
     div_labels = []
     print(mets.tounicode(pretty_print=True))
     for div in div_list:
         div_labels.append(div.attrib['LABEL'])
     assert div_labels == ["Image One", "Image Two", "Image Three"]
+
+
+def test_structmap_has_table_of_contents_div():
+    """Make sure files are in the correct order in the 
+    StructMap"""
+    ie_dc_dict = {"dc:title": "test title"}
+    
+    pm_json = """[
+        {"fileOriginalName": "img1.jpg",
+         "fileOriginalPath": "img1.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image One",
+         "note": "This is a note for image 1",
+         "fileSizeBytes": "119191"},
+         {"fileOriginalName": "img2.jpg",
+         "fileOriginalPath": "img2.jpg",
+         "MD5": "9d09f20ab8e37e5d32cdd1508b49f0a9",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Two",
+         "note": "This is a note for image 2",
+         "fileSizeBytes": "119192"},
+         {"fileOriginalName": "img3.jpg",
+         "fileOriginalPath": "img3.jpg",
+         "MD5": "9d09f20ab8e37e5d32cdd1508b49f0a9",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Three",
+         "note": "This is a note for image 3",
+         "fileSizeBytes": "119192"}
+    ]"""
+    mets = mdf.build_mets_from_json(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_json = pm_json,
+        input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_3'),
+        digital_original=True)
+    toc_div = mets.find('.//{http://www.loc.gov/METS/}structMap/{http://www.loc.gov/METS/}div/{http://www.loc.gov/METS/}div')
+    # print(fptr_list)
+    print(toc_div.attrib['LABEL'])
+    # div_labels = []
+    assert toc_div.attrib['LABEL'] == 'Table of Contents'
+    # print(mets.tounicode(pretty_print=True))
