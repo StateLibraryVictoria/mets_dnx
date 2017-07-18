@@ -742,3 +742,36 @@ def test_structmap_has_table_of_contents_div():
     # div_labels = []
     assert toc_div.attrib['LABEL'] == 'Table of Contents'
     # print(mets.tounicode(pretty_print=True))
+
+
+
+def test_structmap_file_type_exists():
+    """Test to make sure the TYPE="FILE" attrib exists in the 
+    structMap file-level divs, and that it only includes the
+    filename up to the extension."""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm'),
+        modified_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'mm'),
+        input_dir=os.path.join(os.path.dirname(
+            os.path.realpath(__file__)),
+            'data',
+            'test_batch_1'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        )
+    struct_maps = mets.findall('./{http://www.loc.gov/METS/}structMap')
+    for struct_map in struct_maps:
+        file_divs = struct_map.findall('.//{http://www.loc.gov/METS/}div[@TYPE="FILE"]')
+        assert(len(file_divs) > 0)
+    print(ET.tounicode(mets, pretty_print=True))

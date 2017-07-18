@@ -293,7 +293,8 @@ def build_mets(ie_dmd_dict=None,
                 lower_div_count += 1
                 file_div.attrib['ORDER'] = str(lower_div_count)
                 file_div.attrib["LABEL"] = os.path.splitext(file_div.attrib["LABEL"])[0]
-                del file_div.attrib['TYPE']
+                # 2017-07-19: commented out line below, not sure why it was there in the first place!
+                # del file_div.attrib['TYPE']
     return mets
 
 
