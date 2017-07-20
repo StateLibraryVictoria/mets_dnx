@@ -285,16 +285,22 @@ def build_mets(ie_dmd_dict=None,
         top_div_count = 0
         top_divs = struct_map.findall('./{http://www.loc.gov/METS/}div')
         for top_div in top_divs:
-            top_div_count += 1
-            top_div.attrib['ORDER'] = str(top_div_count)
+            # top_div_count += 1
+            # top_div.attrib['ORDER'] = str(top_div_count)
+             # Insert "Table of Contents" div between the file divs and the top div
+            toc_element = ET.Element('{http://www.loc.gov/METS/}div')
+            toc_element.attrib['LABEL'] = 'Table of Contents'
+            top_div.append(toc_element)
             lower_div_count = 0
             file_divs = top_div.findall('./{http://www.loc.gov/METS/}div[@TYPE="FILE"]')
             for file_div in file_divs:
                 lower_div_count += 1
-                file_div.attrib['ORDER'] = str(lower_div_count)
+                # 2017-07-20: Removing "ORDER" attribute
+                # file_div.attrib['ORDER'] = str(lower_div_count)
                 file_div.attrib["LABEL"] = os.path.splitext(file_div.attrib["LABEL"])[0]
                 # 2017-07-19: commented out line below, not sure why it was there in the first place!
                 # del file_div.attrib['TYPE']
+                toc_element.append(file_div)
     return mets
 
 

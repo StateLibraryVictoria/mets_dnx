@@ -549,36 +549,38 @@ def test_structmap_order_attrib_single_file():
     # print(ET.tounicode(mets, pretty_print=True))
 
 
-def test_structmap_order_attrib():
-    """Test for order to be included in single file METS structmaps
-    At both div levels"""
-    ie_dc_dict = {"dc:title": "test title"}
-    mets = mdf.build_mets(
-        ie_dmd_dict=ie_dc_dict,
-        pres_master_dir=os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'data',
-            'test_batch_1',
-            'pm'),
-        modified_master_dir=os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'data',
-            'test_batch_1',
-            'mm'),
-        input_dir=os.path.join(os.path.dirname(
-            os.path.realpath(__file__)),
-            'data',
-            'test_batch_1'),
-        generalIECharacteristics=[{
-            'submissionReason': 'bornDigitalContent',
-            'IEEntityType': 'periodicIE'}],
-        digital_original=True
-        )
-    print(ET.tounicode(mets, pretty_print=True))
-    structmap_divs = mets.findall('.//{http://www.loc.gov/METS/}structMap/{http://www.loc.gov/METS/}div')
-    for div in structmap_divs:
-        print(div.attrib["ORDER"])
-        assert("ORDER" in div.attrib.keys())
+# 2017-07-20: Removed "ORDER" attribute, so the following test is no longer
+# required
+# def test_structmap_order_attrib():
+#     """Test for order to be included in single file METS structmaps divs where TYPE="FILE" """
+#     ie_dc_dict = {"dc:title": "test title"}
+#     mets = mdf.build_mets(
+#         ie_dmd_dict=ie_dc_dict,
+#         pres_master_dir=os.path.join(
+#             os.path.dirname(os.path.realpath(__file__)),
+#             'data',
+#             'test_batch_1',
+#             'pm'),
+#         modified_master_dir=os.path.join(
+#             os.path.dirname(os.path.realpath(__file__)),
+#             'data',
+#             'test_batch_1',
+#             'mm'),
+#         input_dir=os.path.join(os.path.dirname(
+#             os.path.realpath(__file__)),
+#             'data',
+#             'test_batch_1'),
+#         generalIECharacteristics=[{
+#             'submissionReason': 'bornDigitalContent',
+#             'IEEntityType': 'periodicIE'}],
+#         digital_original=True
+#         )
+#     print(ET.tounicode(mets, pretty_print=True))
+#     structmap_divs = mets.findall('.//{http://www.loc.gov/METS/}structMap/{http://www.loc.gov/METS/}div')
+#     for div in structmap_divs:
+#         if "TYPE" in div.attrib and div.attrib["TYPE"] == "FILE":
+#             print(div.attrib["ORDER"])
+#             assert("ORDER" in div.attrib.keys())
 
 
 def test_mets_dnx_with_json_supply_filesizebytes():
@@ -700,7 +702,7 @@ def test_mets_dnx_with_json_structmap_IDs():
     assert div_labels == ["Image One", "Image Two", "Image Three"]
 
 
-def test_structmap_has_table_of_contents_div():
+def test_structmap_has_table_of_contents_div_for_json():
     """Make sure files are in the correct order in the 
     StructMap"""
     ie_dc_dict = {"dc:title": "test title"}
@@ -775,3 +777,35 @@ def test_structmap_file_type_exists():
         file_divs = struct_map.findall('.//{http://www.loc.gov/METS/}div[@TYPE="FILE"]')
         assert(len(file_divs) > 0)
     print(ET.tounicode(mets, pretty_print=True))
+
+
+def test_structmap_has_table_of_contents_div_for_normal_factory():
+    """Test to make sure the structumap has a second-layer div with the
+    LABEL value of "Table of Contents"."""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm'),
+        modified_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'mm'),
+        input_dir=os.path.join(os.path.dirname(
+            os.path.realpath(__file__)),
+            'data',
+            'test_batch_1'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        )
+    struct_maps = mets.findall('./{http://www.loc.gov/METS/}structMap')
+    for struct_map in struct_maps:
+        second_div = struct_map.find("./{http://www.loc.gov/METS/}div/{http://www.loc.gov/METS/}div")
+        print(second_div.attrib["LABEL"])
+        assert(second_div.attrib["LABEL"] == "Table of Contents") 
+    # print(ET.tounicode(mets, pretty_print=True))
