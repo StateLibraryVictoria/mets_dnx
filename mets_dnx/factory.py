@@ -390,14 +390,17 @@ def build_single_file_mets(ie_dmd_dict=None,
     # build structmap
     structmap = mm.StructMap(ID="rep1-1", TYPE="PHYSICAL")
 
-    div_1 = mm.Div(LABEL="Preservation Master", ORDER="1")
+    div_1 = mm.Div(LABEL="Preservation Master")
     structmap.append(div_1)
 
-    div_2 = mm.Div(LABEL=file_label, ORDER="1", TYPE="FILE")
+    div_2 = mm.Div(LABEL="Table of Contents")
     div_1.append(div_2)
 
+    div_3 = mm.Div(LABEL=file_label, TYPE="FILE")
+    div_2.append(div_3)
+
     fptr = mm.Fptr(FILEID='fid1-1')
-    div_2.append(fptr)
+    div_3.append(fptr)
 
     mets.append(structmap)
 
