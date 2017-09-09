@@ -835,3 +835,55 @@ def test_structmap_has_table_of_contents_div_for_single_file_mets():
         second_div = struct_map.find("./{http://www.loc.gov/METS/}div/{http://www.loc.gov/METS/}div")
         print(second_div.attrib["LABEL"])
         assert(second_div.attrib["LABEL"] == "Table of Contents") 
+
+
+def test_mm_and_ad_for_json_mets():
+    """Make sure that all details for mms and ads are being processed correctly"""
+    ie_dc_dict = {"dc:title": "test title"}
+    
+    pm_json = """[
+        {"fileOriginalName": "presmaster.jpg",
+         "fileOriginalPath": "pm/presmaster.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image One",
+         "note": "This is a note for image 1",
+         "fileSizeBytes": "119191"}]"""
+    mm_json = """[{"fileOriginalName": "modifiedmaster.jpg",
+         "fileOriginalPath": "mm/modifiedmaster.jpg",
+         "MD5": "9d09f20ab8e37e5d32cdd1508b49f0a9",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Two",
+         "note": "This is a note for image 2",
+         "fileSizeBytes": "119192"}]"""
+    ad_json = """[{"fileOriginalName": "deriv.jpg",
+         "fileOriginalPath": "ad/deriv.jpg",
+         "MD5": "9d09f20ab8e37e5d32cdd1508b49f0a9",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Three",
+         "note": "This is a note for image 3",
+         "fileSizeBytes": "119192"},
+         {"fileOriginalName": "deriv_2.jpg",
+         "fileOriginalPath": "ad/deriv_2.jpg",
+         "MD5": "9d09f20ab8e37e5d32cdd1508b49f0a9",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Three",
+         "note": "This is a note for image 3",
+         "fileSizeBytes": "119192"}
+    ]"""
+    mets = mdf.build_mets_from_json(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_json = pm_json,
+        modified_master_json = mm_json,
+        access_derivative_json = ad_json,
+        input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_3'),
+        digital_original=True)
+    # structmaps = mets.findall('./{http://www.loc.gov/METS/}structMap')
+    assert mets.find('./{http://www.loc.gov/METS/}structMap[@ID="rep1-1"]') != None
+    assert mets.find('./{http://www.loc.gov/METS/}structMap[@ID="rep2-1"]') != None
+    assert mets.find('./{http://www.loc.gov/METS/}structMap[@ID="rep3-1"]') != None
+    print(ET.tounicode(mets, pretty_print=True))
