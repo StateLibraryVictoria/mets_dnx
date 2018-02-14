@@ -494,7 +494,7 @@ def _parse_json_for_filegrp(filegrp, rep_no, json_doc, input_dir):
         try:
             file_el = mm.File(ID="fid{}-{}".format(file_no, rep_no),
                               ADMID="fid{}-{}-amd".format(file_no, rep_no))
-            flocat = mm.FLocat(LOCTYPE="URL", href=item['fileOriginalPath'])
+            flocat = mm.FLocat(LOCTYPE="URL", href=item['fileOriginalPath'].replace('\\', '/'))
             file_el.append(flocat)
             filegrp.append(file_el)
             file_no += 1
