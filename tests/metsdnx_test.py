@@ -938,3 +938,93 @@ def test_windows_paths_on_json_mets():
         href = '{http://www.w3.org/1999/xlink}href'
         print(flocat.attrib[href])
         assert('\\' not in flocat.attrib[href])
+
+
+def test_logical_structmap_gets_labelled_logical():
+    """Make sure the default "PHYSICAL" label gets overwritten"""
+    ie_dc_dict = [{'dc:title': 'Test deposit'}]
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_5'),
+        input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_5'),
+        digital_original=True)
+    print(ET.tounicode(mets, pretty_print=True))
+    assert (mets.find("{http://www.loc.gov/METS/}structMap"
+                      ).attrib['TYPE'] == 'LOGICAL')
+
+    third_tier = mets.findall("{http://www.loc.gov/METS/}structMap/" +
+                              "{http://www.loc.gov/METS/}div/" +
+                              "{http://www.loc.gov/METS/}div/" +
+                              "{http://www.loc.gov/METS/}div")
+
+    for div in third_tier:
+        child = div.getchildren()[0]
+        assert(child.tag in ["{http://www.loc.gov/METS/}fptr",
+                             "{http://www.loc.gov/METS/}div"])
+
+
+def test_multi_dimension_structmap_gets_flattened():
+    """Multi-level structmaps get flattened when structmap type is selected."""
+    ie_dc_dict = [{'dc:title': 'Test deposit'}]
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_5'),
+        input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_5'),
+        digital_original=True,
+        structmap_type='PHYSICAL')
+    print(ET.tounicode(mets, pretty_print=True))
+    assert (mets.find("{http://www.loc.gov/METS/}structMap"
+                      ).attrib['TYPE'] == 'PHYSICAL')
+    third_tier = mets.findall("{http://www.loc.gov/METS/}structMap/" +
+                              "{http://www.loc.gov/METS/}div/" +
+                              "{http://www.loc.gov/METS/}div/" +
+                              "{http://www.loc.gov/METS/}div")
+    for div in third_tier:
+        child = div.getchildren()[0]
+        assert(child.tag == "{http://www.loc.gov/METS/}fptr")
+
+def test_multi_dim_sm_gets_phys_and_log():
+    """Multi-level structmaps get both SM types when "BOTH" is selected"""
+    ie_dc_dict = [{'dc:title': 'Test deposit'}]
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_5'),
+        input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_5'),
+        digital_original=True,
+        structmap_type='BOTH')
+    print(ET.tounicode(mets, pretty_print=True))
+    structmaps = mets.findall("{http://www.loc.gov/METS/}structMap")
+    logical_checked = False
+    physical_checked = False
+    for structmap in structmaps:
+        print(structmap.attrib['TYPE'])
+        if structmap.attrib['TYPE'].upper() == 'PHYSICAL':
+            physical_checked = True
+        if structmap.attrib['TYPE'].upper() == 'LOGICAL':
+            logical_checked = True
+    assert physical_checked == True
+    assert logical_checked == True
+
+
+def test_logical_structmap_gets_labelled_logical_with_bad_flags():
+    """SM "PHYSICAL" label still gets overwritten if structmap_type is a random word"""
+    ie_dc_dict = [{'dc:title': 'Test deposit'}]
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_5'),
+        input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_5'),
+        digital_original=True,
+        structmap_type="hAMBuRGERS")
+    print(ET.tounicode(mets, pretty_print=True))
+    assert (mets.find("{http://www.loc.gov/METS/}structMap"
+                      ).attrib['TYPE'] == 'LOGICAL')
+
+    third_tier = mets.findall("{http://www.loc.gov/METS/}structMap/" +
+                              "{http://www.loc.gov/METS/}div/" +
+                              "{http://www.loc.gov/METS/}div/" +
+                              "{http://www.loc.gov/METS/}div")
+
+    for div in third_tier:
+        child = div.getchildren()[0]
+        assert(child.tag in ["{http://www.loc.gov/METS/}fptr",
+                             "{http://www.loc.gov/METS/}div"])

@@ -155,7 +155,8 @@ def build_mets(ie_dmd_dict=None,
                 accessRightsPolicy=None,
                 eventList=None,
                 input_dir=None,
-                digital_original=False):
+                digital_original=False,
+                structmap_type='DEFAULT'):
 
     mets = mf.build_mets()
 
@@ -285,22 +286,28 @@ def build_mets(ie_dmd_dict=None,
         top_div_count = 0
         top_divs = struct_map.findall('./{http://www.loc.gov/METS/}div')
         for top_div in top_divs:
-            # top_div_count += 1
+            top_div_count += 1
             # top_div.attrib['ORDER'] = str(top_div_count)
              # Insert "Table of Contents" div between the file divs and the top div
             toc_element = ET.Element('{http://www.loc.gov/METS/}div')
             toc_element.attrib['LABEL'] = 'Table of Contents'
-            top_div.append(toc_element)
-            lower_div_count = 0
-            file_divs = top_div.findall('./{http://www.loc.gov/METS/}div[@TYPE="FILE"]')
+            
+            # lower_div_count = 0
+            file_divs = top_div.findall('./{http://www.loc.gov/METS/}div')
+            top_div.insert(0, toc_element)
             for file_div in file_divs:
-                lower_div_count += 1
-                # 2017-07-20: Removing "ORDER" attribute
-                # file_div.attrib['ORDER'] = str(lower_div_count)
-                file_div.attrib["LABEL"] = os.path.splitext(file_div.attrib["LABEL"])[0]
-                # 2017-07-19: commented out line below, not sure why it was there in the first place!
-                # del file_div.attrib['TYPE']
+            #     lower_div_count += 1
+            #     # 2017-07-20: Removing "ORDER" attribute
+            #     # file_div.attrib['ORDER'] = str(lower_div_count)
+                # file_div.attrib["LABEL"] = os.path.splitext(file_div.attrib["LABEL"])[0]
+            #     # 2017-07-19: commented out line below, not sure why it was there in the first place!
+            #     # del file_div.attrib['TYPE']
                 toc_element.append(file_div)
+            file_divs = top_div.findall('.//{http://www.loc.gov/METS/}div[@TYPE="FILE"]')
+            for file_div in file_divs:
+                file_div.attrib["LABEL"] = os.path.splitext(file_div.attrib["LABEL"])[0]
+
+    mets = _check_structmaps(mets, structmap_type)
     return mets
 
 
@@ -542,7 +549,6 @@ def _parse_json_for_structmap(div, rep_no, json_doc):
         _recursively_build_divs(div, pathlist, rep_no, file_no, item)
 
 
-
 def _build_rep_amdsec(mets, rep_no, digital_original, preservation_type):
     rep_amdsec = ET.Element("{http://www.loc.gov/METS/}amdSec", ID="rep{}-amd".format(rep_no))
     general_rep_characteristics = [{'RevisionNumber': '1', 
@@ -561,6 +567,58 @@ def _build_rep_amdsec(mets, rep_no, digital_original, preservation_type):
         source_sec=rep_amd_source, 
         digiprov_sec=rep_amd_digiprov)
     mets.append(rep_amdsec)
+
+
+def _check_structmaps(mets, structmap_type):
+    structmaps = mets.findall("{http://www.loc.gov/METS/}structMap")
+    # print("here we go at line 574!")
+    # print(structmaps)
+    for structmap in structmaps:
+        # jump down to the second layer of divs (usually the 
+        # 'table of contents' div)
+        toc_div = structmap.find("{http://www.loc.gov/METS/}div/" + 
+                                 "{http://www.loc.gov/METS/}div")
+        # check if there are two or more divs below this
+        double_divs = structmap.findall(
+            "{http://www.loc.gov/METS/}div/{http://www.loc.gov/METS/}div")
+        if len(double_divs) > 0:
+            if structmap_type.upper() not in ['PHYSICAL', 'BOTH']:
+                # This violates Rosetta's rules about structmap types,
+                # So let's make it logical
+                structmap.attrib['TYPE'] = 'LOGICAL'
+            elif structmap_type.upper() in ['PHYSICAL', 'BOTH']:
+                new_sm = mm.StructMap(ID=structmap.attrib['ID'],
+                                      TYPE="PHYSICAL")
+
+                div_1 = mm.Div(LABEL="Preservation Master")
+                new_sm.append(div_1)
+
+                div_2 = mm.Div(LABEL="Table of Contents")
+                div_1.append(div_2)
+
+                file_divs = structmap.findall(
+                    "{http://www.loc.gov/METS/}div/" +
+                    "{http://www.loc.gov/METS/}div/" +
+                    "{http://www.loc.gov/METS/}div")
+                file_divs = structmap.findall(
+                    './/{http://www.loc.gov/METS/}div[@TYPE="FILE"]')
+                for file_div in file_divs:
+                    div_2.append(file_div)
+                mets.append(new_sm)
+                if structmap_type.upper() == 'PHYSICAL':
+                    mets.remove(structmap)
+                else:
+                    structmap.attrib['TYPE'] = 'LOGICAL'
+    return mets
+
+
+def whittle_down_div(file_div):
+    print(file_div)
+    if ('LABEL' in file_div.attrib) and (file_div.attrib['LABEL'] == 'FILE'):
+        return file_div
+    else:
+        return whittle_down_div(file_div.find("{http://www.loc.gov/METS/}div"))
+
 
 def build_mets_from_json(ie_dmd_dict=None,
                 pres_master_json=None, 
