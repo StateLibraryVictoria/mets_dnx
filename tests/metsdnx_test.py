@@ -1002,6 +1002,8 @@ def test_multi_dim_sm_gets_phys_and_log():
             physical_checked = True
         if structmap.attrib['TYPE'].upper() == 'LOGICAL':
             logical_checked = True
+        fptrs = structmap.findall(".//{http://www.loc.gov/METS/}fptr")
+        assert(len(fptrs) > 1)
     assert physical_checked == True
     assert logical_checked == True
 
@@ -1015,7 +1017,7 @@ def test_logical_structmap_gets_labelled_logical_with_bad_flags():
         input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_5'),
         digital_original=True,
         structmap_type="hAMBuRGERS")
-    print(ET.tounicode(mets, pretty_print=True))
+    # print(ET.tounicode(mets, pretty_print=True))
     assert (mets.find("{http://www.loc.gov/METS/}structMap"
                       ).attrib['TYPE'] == 'LOGICAL')
 
@@ -1028,3 +1030,231 @@ def test_logical_structmap_gets_labelled_logical_with_bad_flags():
         child = div.getchildren()[0]
         assert(child.tag in ["{http://www.loc.gov/METS/}fptr",
                              "{http://www.loc.gov/METS/}div"])
+
+
+def test_structmap_for_json_mets_default():
+    """Make sure that the default hierarchical structmap is type "LOGICAL" """
+    ie_dc_dict = {"dc:title": "test title"}
+
+    pm_json = """[
+        {"fileOriginalName": "img1.jpg",
+         "fileOriginalPath": "path/to/files/img1.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image One",
+         "note": "This is a note for image 1",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img2.jpg",
+         "fileOriginalPath": "path/to/files/img2.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Two",
+         "note": "This is a note for image 2",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img3.jpg",
+         "fileOriginalPath": "path/to/other/files/img3.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Three",
+         "note": "This is a note for image 3",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img4.jpg",
+         "fileOriginalPath": "path/to/other/files/img4.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Four",
+         "note": "This is a note for image 4",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img5.jpg",
+         "fileOriginalPath": "path/to/yet/more/files/img5.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Five",
+         "note": "This is a note for image 5",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img6.jpg",
+         "fileOriginalPath": "path/to/yet/more/files/img6.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Six",
+         "note": "This is a note for image 6",
+         "fileSizeBytes": "119191"}
+         ]"""
+
+    mets = mdf.build_mets_from_json(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_json=pm_json,
+        input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_3'),
+        digital_original=True)
+    toc_div = mets.find('.//{http://www.loc.gov/METS/}structMap/{http://www.loc.gov/METS/}div/{http://www.loc.gov/METS/}div')
+    # print(fptr_list)
+    print(toc_div.attrib['LABEL'])
+    # div_labels = []
+    assert toc_div.attrib['LABEL'] == 'Table of Contents'
+    assert(mets.find(
+        './/{http://www.loc.gov/METS/}structMap').attrib['TYPE'] == 'LOGICAL')
+
+
+def test_structmap_for_json_mets_physical():
+    """Make sure that the strucmap type is set to "PHYSICAL" when flagged"""
+    ie_dc_dict = {"dc:title": "test title"}
+
+    pm_json = """[
+        {"fileOriginalName": "img1.jpg",
+         "fileOriginalPath": "path/to/files/img1.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image One",
+         "note": "This is a note for image 1",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img2.jpg",
+         "fileOriginalPath": "path/to/files/img2.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Two",
+         "note": "This is a note for image 2",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img3.jpg",
+         "fileOriginalPath": "path/to/other/files/img3.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Three",
+         "note": "This is a note for image 3",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img4.jpg",
+         "fileOriginalPath": "path/to/other/files/img4.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Four",
+         "note": "This is a note for image 4",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img5.jpg",
+         "fileOriginalPath": "path/to/yet/more/files/img5.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Five",
+         "note": "This is a note for image 5",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img6.jpg",
+         "fileOriginalPath": "path/to/yet/more/files/img6.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Six",
+         "note": "This is a note for image 6",
+         "fileSizeBytes": "119191"}
+         ]"""
+
+    mets = mdf.build_mets_from_json(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_json=pm_json,
+        input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_3'),
+        digital_original=True,
+        structmap_type="PHYSICAL")
+    assert(mets.find(
+        './/{http://www.loc.gov/METS/}structMap').attrib['TYPE'] == 'PHYSICAL')
+    # print(ET.tounicode(mets, pretty_print=True))
+
+def test_structmap_for_json_mets_both():
+    """Make sure that METS gets both PHYSICAL and LOGICAL SMs when flagged"""
+    ie_dc_dict = {"dc:title": "test title"}
+
+    pm_json = """[
+        {"fileOriginalName": "img1.jpg",
+         "fileOriginalPath": "path/to/files/img1.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image One",
+         "note": "This is a note for image 1",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img2.jpg",
+         "fileOriginalPath": "path/to/files/img2.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Two",
+         "note": "This is a note for image 2",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img3.jpg",
+         "fileOriginalPath": "path/to/other/files/img3.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Three",
+         "note": "This is a note for image 3",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img4.jpg",
+         "fileOriginalPath": "path/to/other/files/img4.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Four",
+         "note": "This is a note for image 4",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img5.jpg",
+         "fileOriginalPath": "path/to/yet/more/files/img5.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Five",
+         "note": "This is a note for image 5",
+         "fileSizeBytes": "119191"},
+
+         {"fileOriginalName": "img6.jpg",
+         "fileOriginalPath": "path/to/yet/more/files/img6.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image Six",
+         "note": "This is a note for image 6",
+         "fileSizeBytes": "119191"}
+         ]"""
+
+    mets = mdf.build_mets_from_json(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_json=pm_json,
+        input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_3'),
+        digital_original=True,
+        structmap_type="BOTH")
+    structmaps = mets.findall("{http://www.loc.gov/METS/}structMap")
+    # print(structmaps)
+    assert(len(structmaps) == 2)
+    physical_checked = False
+    logical_checked = False
+    for structmap in structmaps:
+        print(structmap.attrib['TYPE'])
+        if structmap.attrib['TYPE'].upper() == 'PHYSICAL':
+            physical_checked = True
+        if structmap.attrib['TYPE'].upper() == 'LOGICAL':
+            logical_checked = True
+        fptrs = structmap.findall(".//{http://www.loc.gov/METS/}fptr")
+        assert(len(fptrs) > 1)
+    assert(physical_checked == True)
+    assert(logical_checked == True)
+    print(ET.tounicode(mets, pretty_print=True))

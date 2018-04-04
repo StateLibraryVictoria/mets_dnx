@@ -4,6 +4,8 @@ import os
 import re
 import time
 
+from copy import deepcopy
+
 from lxml import etree as ET
 
 from pydc import factory as dc_factory
@@ -597,13 +599,9 @@ def _check_structmaps(mets, structmap_type):
                 div_1.append(div_2)
 
                 file_divs = structmap.findall(
-                    "{http://www.loc.gov/METS/}div/" +
-                    "{http://www.loc.gov/METS/}div/" +
-                    "{http://www.loc.gov/METS/}div")
-                file_divs = structmap.findall(
                     './/{http://www.loc.gov/METS/}div[@TYPE="FILE"]')
                 for file_div in file_divs:
-                    div_2.append(file_div)
+                    div_2.append(deepcopy(file_div))
                 mets.append(new_sm)
                 if structmap_type.upper() == 'PHYSICAL':
                     mets.remove(structmap)
@@ -631,7 +629,8 @@ def build_mets_from_json(ie_dmd_dict=None,
                 accessRightsPolicy=None,
                 eventList=None,
                 input_dir=None,
-                digital_original=False):
+                digital_original=False,
+                structmap_type="DEFAULT"):
     """Build a METS XML file using JSON-formatted data describing the 
     rep structures, rather than directory paths."""
     mets = mf.build_mets()
@@ -724,4 +723,5 @@ def build_mets_from_json(ie_dmd_dict=None,
     for structmap in structmap_list:
         mets.append(structmap)
 
+    _check_structmaps(mets, structmap_type)
     return mets
