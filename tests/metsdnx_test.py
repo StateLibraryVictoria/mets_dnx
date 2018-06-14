@@ -1258,3 +1258,38 @@ def test_structmap_for_json_mets_both():
     assert(physical_checked == True)
     assert(logical_checked == True)
     print(ET.tounicode(mets, pretty_print=True))
+
+
+def test_mets_dnx_with_json_for_file_label():
+    """File labels don't get truncated if they have periods in them
+    """
+    ie_dc_dict = {"dc:title": "test title"}
+
+    pm_json = """[
+        {"fileOriginalName": "img1.jpg",
+         "fileOriginalPath": "path/to/files/img1.jpg",
+         "MD5": "aff64bf1391ac627edb3234a422f9a77",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image.One",
+         "note": "This is a note for image 1"},
+         {"fileOriginalName": "img2.jpg",
+         "fileOriginalPath": "path/to/files/img2.jpg",
+         "MD5": "9d09f20ab8e37e5d32cdd1508b49f0a9",
+         "fileCreationDate": "1st of January, 1601",
+         "fileModificationDate": "1st of January, 1601",
+         "label": "Image.Two",
+         "note": "This is a note for image 2"}
+    ]"""
+    mets = mdf.build_mets_from_json(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_json = pm_json,
+        input_dir=os.path.join(CURRENT_DIR, 'data', 'test_batch_2'),
+        digital_original=True)
+    # print(ET.tounicode(mets, pretty_print=True))
+    file_labels_list = mets.findall('.//key[@id="label"]')
+    for file_label in file_labels_list:
+        print(file_label.text)
+        assert file_label.text in ('Image.One', 'Image.Two')
+        assert file_label.text not in ('Image',)
+        assert file_label.text in ('Image',)

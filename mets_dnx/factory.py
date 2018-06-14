@@ -13,6 +13,7 @@ from pymets import mets_factory as mf
 from pymets import mets_model as mm
 from pydnx import factory as dnx_factory
 
+
 def generate_md5(filepath, block_size=2**20):
     """For producing md5 checksums for a file at a specified filepath."""
     m = hashlib.md5()
@@ -442,7 +443,7 @@ def _build_fl_amd_from_json(mets, file_no, rep_no, item):
         if key == 'note':
             gfc['note'] = item[key]
         if key == 'label':
-            gfc['label'] = os.path.splitext(item[key])[0]
+            gfc['label'] = item[key]
 
         # fixity values
         if key.upper() == 'MD5':
