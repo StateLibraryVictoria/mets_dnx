@@ -522,10 +522,10 @@ def _recursively_build_divs(div, pathlist, rep_no, file_no, json_doc):
         _recursively_build_divs(newdiv, pathlist[1:], rep_no, file_no, json_doc)
     else:
         if len(pathlist) == 1:
-            if 'label' in rep_dict.keys():
-                label = os.path.splitext(rep_dict['label'])[0]
+            if 'label' in rep_dict.keys():          
+                label = rep_dict['label']
             else:
-                label = rep_dict['fileOriginalName']
+                label = os.path.splitext(rep_dict['fileOriginalName'])[0]
             newdiv = mm.Div(LABEL="{}".format(label),
                             TYPE="FILE")
             fptr = mm.Fptr(FILEID="fid{}-{}".format(file_no, rep_no))
