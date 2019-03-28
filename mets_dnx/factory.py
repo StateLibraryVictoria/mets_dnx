@@ -574,11 +574,7 @@ def _build_rep_amdsec(mets, rep_no, digital_original, preservation_type):
 
 def _check_structmaps(mets, structmap_type):
     structmaps = mets.findall("{http://www.loc.gov/METS/}structMap")
-    # print("here we go at line 574!")
-    # print(structmaps)
     for structmap in structmaps:
-        print("NOW PRINTING A STRUCTMAP!!1!")
-        print(ET.tounicode(structmap, pretty_print=True))
         # Grab top div label if exists
         top_div_label = None
         top_div = structmap.find("./{http://www.loc.gov/METS/}div")
