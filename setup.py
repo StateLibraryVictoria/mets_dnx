@@ -3,7 +3,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-VERSION='0.1.14'
+VERSION='0.1.15'
 
 config = {
 	'name':'mets_dnx',

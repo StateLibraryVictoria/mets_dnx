@@ -38,7 +38,7 @@ def test_mets_dnx():
             'IEEntityType': 'periodicIE'}],
         )
     print(ET.tounicode(mets, pretty_print=True))
-    
+
 
 def test_mets_dnx_with_digital_original_details():
     """Test big fix where true/false value was being populated with uppercase
@@ -264,10 +264,10 @@ def test_mets_dnx_with_for_single_rep():
 def test_mets_dnx_with_json_for_admid_in_filesec_files():
     """For testing new function for building SIP with JSON documents
     describing the structure and metadata of files.
-    Specifically testing that all files in the filesec have an ADMID 
+    Specifically testing that all files in the filesec have an ADMID
     attrib."""
     ie_dc_dict = {"dc:title": "test title"}
-    
+
     pm_json = """[
         {"fileOriginalName": "img1.jpg",
          "fileOriginalPath": "path/to/files/img1.jpg",
@@ -335,7 +335,7 @@ def test_mets_dnx_deriv_copy_gets_preservationType():
 
 
 def test_file_original_path_exists():
-    """Test to make sure the fileOriginalPath is added to the 
+    """Test to make sure the fileOriginalPath is added to the
     generalFileCharacteristics sections"""
     ie_dc_dict = {"dc:title": "test title"}
     mets = mdf.build_mets(
@@ -365,7 +365,7 @@ def test_file_original_path_exists():
 
 
 def test_gfc_file_label_exists():
-    """Test to make sure the label is added to the 
+    """Test to make sure the label is added to the
     generalFileCharacteristics sections, and that it onlye includes the
     filename up to the extension."""
     ie_dc_dict = {"dc:title": "test title"}
@@ -397,7 +397,7 @@ def test_gfc_file_label_exists():
 
 
 def test_structmap_file_label_exists():
-    """Test to make sure the label is added to the 
+    """Test to make sure the label is added to the
     structMap file-level divs, and that it only includes the
     filename up to the extension."""
     ie_dc_dict = {"dc:title": "test title"}
@@ -446,7 +446,7 @@ def test_labels_in_mets_dnx_single_file():
             'submissionReason': 'bornDigitalContent',
             'IEEntityType': 'periodicIE'}],
         )
-    
+
     gfc = mets.findall('.//section[@id="generalFileCharacteristics"]/record')[0]
     # since we're doing this, let's also test the FileOriginalName key
     file_original_name =  gfc.findall('./key[@id="fileOriginalName"]')[0]
@@ -484,7 +484,7 @@ def test_digtial_original_dnx():
             'IEEntityType': 'periodicIE'}],
         digital_original=True
         )
-    
+
     grc = mets.findall('.//section[@id="generalRepCharacteristics"]')[0]
     # print(ET.tounicode(grc[0], pretty_print=True))
     do = grc.findall('.//key[@id="DigitalOriginal"]')[0]
@@ -588,10 +588,10 @@ def test_digtial_original_dnx_single_file():
 def test_mets_dnx_with_json_supply_filesizebytes():
     """For testing new function for building SIP with JSON documents
     describing the structure and metadata of files.
-    Specifically testing that all files in the filesec have an ADMID 
+    Specifically testing that all files in the filesec have an ADMID
     attrib."""
     ie_dc_dict = {"dc:title": "test title"}
-    
+
     pm_json = """[
         {"fileOriginalName": "img1.jpg",
          "fileOriginalPath": "path/to/files/img1.jpg",
@@ -628,7 +628,7 @@ def test_mets_dnx_with_json_structmap_IDs():
     a bug was found where all fptr elements in the structMap got the
     fid of the first file. This is to check that doesn't happen anymore."""
     ie_dc_dict = {"dc:title": "test title"}
-    
+
     pm_json = """[
         {"fileOriginalName": "img1.jpg",
          "fileOriginalPath": "path/to/files/img1.jpg",
@@ -660,10 +660,10 @@ def test_mets_dnx_with_json_structmap_IDs():
     assert len(file_ids) == len(set(file_ids))
 
 def test_mets_dnx_with_json_structmap_IDs():
-    """Make sure files are in the correct order in the 
+    """Make sure files are in the correct order in the
     StructMap"""
     ie_dc_dict = {"dc:title": "test title"}
-    
+
     pm_json = """[
         {"fileOriginalName": "img1.jpg",
          "fileOriginalPath": "img1.jpg",
@@ -705,10 +705,10 @@ def test_mets_dnx_with_json_structmap_IDs():
 
 
 def test_structmap_has_table_of_contents_div_for_json():
-    """Make sure files are in the correct order in the 
+    """Make sure files are in the correct order in the
     StructMap"""
     ie_dc_dict = {"dc:title": "test title"}
-    
+
     pm_json = """[
         {"fileOriginalName": "img1.jpg",
          "fileOriginalPath": "img1.jpg",
@@ -750,7 +750,7 @@ def test_structmap_has_table_of_contents_div_for_json():
 
 
 def test_structmap_file_type_exists():
-    """Test to make sure the TYPE="FILE" attrib exists in the 
+    """Test to make sure the TYPE="FILE" attrib exists in the
     structMap file-level divs, and that it only includes the
     filename up to the extension."""
     ie_dc_dict = {"dc:title": "test title"}
@@ -809,7 +809,7 @@ def test_structmap_has_table_of_contents_div_for_normal_factory():
     for struct_map in struct_maps:
         second_div = struct_map.find("./{http://www.loc.gov/METS/}div/{http://www.loc.gov/METS/}div")
         print(second_div.attrib["LABEL"])
-        assert(second_div.attrib["LABEL"] == "Table of Contents") 
+        assert(second_div.attrib["LABEL"] == "Table of Contents")
     # print(ET.tounicode(mets, pretty_print=True))
 
 
@@ -829,18 +829,18 @@ def test_structmap_has_table_of_contents_div_for_single_file_mets():
             'submissionReason': 'bornDigitalContent',
             'IEEntityType': 'periodicIE'}],
         )
-    
+
     struct_maps = mets.findall('./{http://www.loc.gov/METS/}structMap')
     for struct_map in struct_maps:
         second_div = struct_map.find("./{http://www.loc.gov/METS/}div/{http://www.loc.gov/METS/}div")
         print(second_div.attrib["LABEL"])
-        assert(second_div.attrib["LABEL"] == "Table of Contents") 
+        assert(second_div.attrib["LABEL"] == "Table of Contents")
 
 
 def test_mm_and_ad_for_json_mets():
     """Make sure that all details for mms and ads are being processed correctly"""
     ie_dc_dict = {"dc:title": "test title"}
-    
+
     pm_json = """[
         {"fileOriginalName": "presmaster.jpg",
          "fileOriginalPath": "pm/presmaster.jpg",
@@ -892,7 +892,7 @@ def test_mm_and_ad_for_json_mets():
 def test_windows_paths_on_json_mets():
     """Make sure that all details for mms and ads are being processed correctly"""
     ie_dc_dict = {"dc:title": "test title"}
-    
+
     pm_json = """[
         {"fileOriginalName": "presmaster.jpg",
          "fileOriginalPath": "pm\\\\presmaster.jpg",
@@ -1325,3 +1325,37 @@ def test_mets_dnx_with_json_for_sm_label_with_period():
     for sm_label in sm_labels_list:
         print(sm_label.attrib['LABEL'])
         assert(sm_label.attrib['LABEL'] in ('Image.One', 'Image.Two'))
+
+
+def test_mets_dnx_with_pm_and_ad_for_phys_structmap_labels():
+    """Make sure the correct rep labels are used.
+    """
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'pm'),
+        modified_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_1',
+            'mm'),
+        input_dir=os.path.join(os.path.dirname(
+            os.path.realpath(__file__)),
+            'data',
+            'test_batch_1'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        digital_original=True,
+        structmap_type='PHYSICAL'
+        )
+    print(ET.tounicode(mets, pretty_print=True))
+    mm_structmap_label = mets.find(
+            '{http://www.loc.gov/METS/}structMap[@ID="rep2-1"]/' +
+            '{http://www.loc.gov/METS/}div').attrib['LABEL']
+    print(mm_structmap_label)
+    assert(mm_structmap_label == "Modified Master")

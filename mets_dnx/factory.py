@@ -26,12 +26,12 @@ def generate_md5(filepath, block_size=2**20):
     return m.hexdigest()
 
 
-def build_amdsec(amdsec, tech_sec=None, rights_sec=None, 
+def build_amdsec(amdsec, tech_sec=None, rights_sec=None,
                  source_sec=None, digiprov_sec=None):
     amd_id = amdsec.attrib['ID']
     amd_tech = ET.SubElement(
-                    amdsec, 
-                    "{http://www.loc.gov/METS/}techMD", 
+                    amdsec,
+                    "{http://www.loc.gov/METS/}techMD",
                     ID=amd_id + "-tech")
     amd_rights = ET.SubElement(
                     amdsec,
@@ -48,38 +48,38 @@ def build_amdsec(amdsec, tech_sec=None, rights_sec=None,
 
     for el in [amd_tech, amd_rights, amd_source, amd_digiprov]:
         mdWrap = ET.SubElement(
-                        el, 
+                        el,
                         "{http://www.loc.gov/METS/}mdWrap",
                         MDTYPE="OTHER", OTHERMDTYPE="dnx")
         xmlData = ET.SubElement(mdWrap, "{http://www.loc.gov/METS/}xmlData")
-        if (el.tag == "{http://www.loc.gov/METS/}techMD" and 
+        if (el.tag == "{http://www.loc.gov/METS/}techMD" and
                 tech_sec != None):
             xmlData.append(tech_sec)
-        elif (el.tag == "{http://www.loc.gov/METS/}techMD" and 
+        elif (el.tag == "{http://www.loc.gov/METS/}techMD" and
                 tech_sec == None):
             xmlData.append(ET.Element("dnx",
                 xmlns="http://www.exlibrisgroup.com/dps/dnx"))
 
-        if (el.tag == "{http://www.loc.gov/METS/}rightsMD" and 
+        if (el.tag == "{http://www.loc.gov/METS/}rightsMD" and
                 rights_sec != None):
             xmlData.append(rights_sec)
-        elif (el.tag == "{http://www.loc.gov/METS/}rightsMD" and 
+        elif (el.tag == "{http://www.loc.gov/METS/}rightsMD" and
                 rights_sec == None):
             xmlData.append(ET.Element("dnx",
                 xmlns="http://www.exlibrisgroup.com/dps/dnx"))
 
-        if (el.tag == "{http://www.loc.gov/METS/}sourceMD" and 
+        if (el.tag == "{http://www.loc.gov/METS/}sourceMD" and
                 source_sec != None):
             xmlData.append(source_sec)
-        elif (el.tag == "{http://www.loc.gov/METS/}sourceMD" and 
+        elif (el.tag == "{http://www.loc.gov/METS/}sourceMD" and
                 source_sec == None):
             xmlData.append(ET.Element("dnx",
                 xmlns="http://www.exlibrisgroup.com/dps/dnx"))
 
-        if (el.tag == "{http://www.loc.gov/METS/}digiprovMD" and 
+        if (el.tag == "{http://www.loc.gov/METS/}digiprovMD" and
                 digiprov_sec != None):
             xmlData.append(digiprov_sec)
-        elif (el.tag == "{http://www.loc.gov/METS/}digiprovMD" and 
+        elif (el.tag == "{http://www.loc.gov/METS/}digiprovMD" and
                 digiprov_sec == None):
             xmlData.append(ET.Element("dnx",
                 xmlns="http://www.exlibrisgroup.com/dps/dnx"))
@@ -118,8 +118,8 @@ def _build_ie_dmd_amd(mets,
                     mets,
                     "{http://www.loc.gov/METS/}amdSec",
                     ID="ie-amd")
-    if ((generalIECharacteristics != None) 
-            or (cms != None) 
+    if ((generalIECharacteristics != None)
+            or (cms != None)
             or (objectIdentifier != None)
             or (webHarvesting != None)):
         ie_amd_tech = dnx_factory.build_ie_amdTech(
@@ -148,7 +148,7 @@ def _build_ie_dmd_amd(mets,
             ie_amd_source)
 
 def build_mets(ie_dmd_dict=None,
-                pres_master_dir=None, 
+                pres_master_dir=None,
                 modified_master_dir=None,
                 access_derivative_dir=None,
                 cms=None,
@@ -174,7 +174,7 @@ def build_mets(ie_dmd_dict=None,
 
     mf.build_amdsec_filegrp_structmap(
         mets,
-        ie_id="ie1", 
+        ie_id="ie1",
         pres_master_dir=pres_master_dir,
         modified_master_dir=modified_master_dir,
         access_derivative_dir=access_derivative_dir,
@@ -187,10 +187,10 @@ def build_mets(ie_dmd_dict=None,
     file_groups = mets.findall('.//{http://www.loc.gov/METS/}fileGrp')
     for file_group in file_groups:
         rep_id = file_group.attrib['ID']
-        rep_type = mets.find('.//{%s}structMap[@ID="%s-1"]/{%s}div' % 
+        rep_type = mets.find('.//{%s}structMap[@ID="%s-1"]/{%s}div' %
             ('http://www.loc.gov/METS/', rep_id, 'http://www.loc.gov/METS/')
             ).attrib['LABEL']
-        
+
         if rep_type == 'Preservation Master':
             pres_type = 'PRESERVATION_MASTER'
             pres_location = pres_master_dir
@@ -204,9 +204,9 @@ def build_mets(ie_dmd_dict=None,
             pres_type = None
             pres_location = '.'
 
-        rep_amdsec = mets.xpath("//mets:amdSec[@ID='%s']" % 
+        rep_amdsec = mets.xpath("//mets:amdSec[@ID='%s']" %
                 str(rep_id + '-amd'), namespaces=mets.nsmap)[0]
-        general_rep_characteristics = [{'RevisionNumber': '1', 
+        general_rep_characteristics = [{'RevisionNumber': '1',
                 'DigitalOriginal': str(digital_original).lower(),
                 'usageType': 'VIEW',
                 'preservationType': pres_type}]
@@ -217,16 +217,16 @@ def build_mets(ie_dmd_dict=None,
         rep_amd_source = None
         build_amdsec(
             rep_amdsec,
-            tech_sec=rep_amd_tech, 
+            tech_sec=rep_amd_tech,
             rights_sec=rep_amd_rights,
-            source_sec=rep_amd_source, 
+            source_sec=rep_amd_source,
             digiprov_sec=rep_amd_digiprov)
 
         # create amdsec for files
         for fl in file_group.findall('./{http://www.loc.gov/METS/}file'):
             fl_id = fl.attrib['ID']
             fl_amdsec = None
-            fl_amdsec = mets.xpath("//mets:amdSec[@ID='%s']" % 
+            fl_amdsec = mets.xpath("//mets:amdSec[@ID='%s']" %
                     str(fl_id + '-amd'), namespaces=mets.nsmap)[0]
             file_original_location = os.path.join(input_dir,
                 fl.find('./{http://www.loc.gov/METS/}FLocat').attrib[
@@ -281,7 +281,7 @@ def build_mets(ie_dmd_dict=None,
                 element.attrib['FILEID'])
 
     # 2017-02-16 (SM): Modify the file label in the structmaps so that it does
-    # not contain file extensions. This is an NDHA requirement, so I am 
+    # not contain file extensions. This is an NDHA requirement, so I am
     # reluctant to put this on the actual METS factory level.
     # 2017-02-16 (SM): Add an order count to the divs in the structmap.
     struct_maps = mets.findall('./{http://www.loc.gov/METS/}structMap')
@@ -294,7 +294,7 @@ def build_mets(ie_dmd_dict=None,
              # Insert "Table of Contents" div between the file divs and the top div
             toc_element = ET.Element('{http://www.loc.gov/METS/}div')
             toc_element.attrib['LABEL'] = 'Table of Contents'
-            
+
             # lower_div_count = 0
             file_divs = top_div.findall('./{http://www.loc.gov/METS/}div')
             top_div.insert(0, toc_element)
@@ -335,7 +335,7 @@ def build_single_file_mets(ie_dmd_dict=None,
 
     # Build rep amdsec
     rep_amdsec = ET.Element("{http://www.loc.gov/METS/}amdSec", ID="rep1-amd")
-    general_rep_characteristics = [{'RevisionNumber': '1', 
+    general_rep_characteristics = [{'RevisionNumber': '1',
             'DigitalOriginal': str(digital_original).lower(),
             'usageType': 'VIEW',
             'preservationType': 'PRESERVATION_MASTER'}]
@@ -346,9 +346,9 @@ def build_single_file_mets(ie_dmd_dict=None,
     rep_amd_source = None
     build_amdsec(
         rep_amdsec,
-        tech_sec=rep_amd_tech, 
+        tech_sec=rep_amd_tech,
         rights_sec=rep_amd_rights,
-        source_sec=rep_amd_source, 
+        source_sec=rep_amd_source,
         digiprov_sec=rep_amd_digiprov)
     mets.append(rep_amdsec)
 
@@ -396,7 +396,7 @@ def build_single_file_mets(ie_dmd_dict=None,
     file_el.append(flocat)
 
     mets.append(filesec)
-    
+
     # build structmap
     structmap = mm.StructMap(ID="rep1-1", TYPE="PHYSICAL")
 
@@ -522,7 +522,7 @@ def _recursively_build_divs(div, pathlist, rep_no, file_no, json_doc):
         _recursively_build_divs(newdiv, pathlist[1:], rep_no, file_no, json_doc)
     else:
         if len(pathlist) == 1:
-            if 'label' in rep_dict.keys():          
+            if 'label' in rep_dict.keys():
                 label = rep_dict['label']
             else:
                 label = os.path.splitext(rep_dict['fileOriginalName'])[0]
@@ -554,7 +554,7 @@ def _parse_json_for_structmap(div, rep_no, json_doc):
 
 def _build_rep_amdsec(mets, rep_no, digital_original, preservation_type):
     rep_amdsec = ET.Element("{http://www.loc.gov/METS/}amdSec", ID="rep{}-amd".format(rep_no))
-    general_rep_characteristics = [{'RevisionNumber': '1', 
+    general_rep_characteristics = [{'RevisionNumber': '1',
             'DigitalOriginal': str(digital_original).lower(),
             'usageType': 'VIEW',
             'preservationType': preservation_type}]
@@ -565,9 +565,9 @@ def _build_rep_amdsec(mets, rep_no, digital_original, preservation_type):
     rep_amd_source = None
     build_amdsec(
         rep_amdsec,
-        tech_sec=rep_amd_tech, 
+        tech_sec=rep_amd_tech,
         rights_sec=rep_amd_rights,
-        source_sec=rep_amd_source, 
+        source_sec=rep_amd_source,
         digiprov_sec=rep_amd_digiprov)
     mets.append(rep_amdsec)
 
@@ -577,9 +577,16 @@ def _check_structmaps(mets, structmap_type):
     # print("here we go at line 574!")
     # print(structmaps)
     for structmap in structmaps:
-        # jump down to the second layer of divs (usually the 
+        print("NOW PRINTING A STRUCTMAP!!1!")
+        print(ET.tounicode(structmap, pretty_print=True))
+        # Grab top div label if exists
+        top_div_label = None
+        top_div = structmap.find("./{http://www.loc.gov/METS/}div")
+        if 'LABEL' in top_div.attrib:
+            top_div_label = top_div.attrib['LABEL']
+        # jump down to the second layer of divs (usually the
         # 'table of contents' div)
-        toc_div = structmap.find("{http://www.loc.gov/METS/}div/" + 
+        toc_div = structmap.find("./{http://www.loc.gov/METS/}div/" +
                                  "{http://www.loc.gov/METS/}div")
         # check if there are two or more divs below this
         double_divs = structmap.findall(
@@ -593,7 +600,7 @@ def _check_structmaps(mets, structmap_type):
                 new_sm = mm.StructMap(ID=structmap.attrib['ID'],
                                       TYPE="PHYSICAL")
 
-                div_1 = mm.Div(LABEL="Preservation Master")
+                div_1 = mm.Div(LABEL=top_div_label)
                 new_sm.append(div_1)
 
                 div_2 = mm.Div(LABEL="Table of Contents")
@@ -620,7 +627,7 @@ def whittle_down_div(file_div):
 
 
 def build_mets_from_json(ie_dmd_dict=None,
-                pres_master_json=None, 
+                pres_master_json=None,
                 modified_master_json=None,
                 access_derivative_json=None,
                 cms=None,
@@ -632,7 +639,7 @@ def build_mets_from_json(ie_dmd_dict=None,
                 input_dir=None,
                 digital_original=False,
                 structmap_type="DEFAULT"):
-    """Build a METS XML file using JSON-formatted data describing the 
+    """Build a METS XML file using JSON-formatted data describing the
     rep structures, rather than directory paths."""
     mets = mf.build_mets()
     _build_ie_dmd_amd(mets,
