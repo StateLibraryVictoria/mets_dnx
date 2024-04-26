@@ -241,7 +241,7 @@ def build_mets(ie_dmd_dict=None,
                     "%Y-%m-%dT%H:%M:%S",
                     time.localtime(os.path.getctime(file_original_location)))
             general_file_characteristics = [{
-                'fileOriginalPath': file_original_location,
+                'fileOriginalPath': file_original_location.replace(input_dir + "\\",""),
                 'fileSizeBytes': str(file_size_bytes),
                 'fileModificationDate': last_modified,
                 'fileCreationDate': created_time,
