@@ -229,8 +229,8 @@ def build_mets(ie_dmd_dict=None,
             fl_amdsec = mets.xpath("//mets:amdSec[@ID='%s']" %
                     str(fl_id + '-amd'), namespaces=mets.nsmap)[0]
             file_original_location = os.path.join(input_dir,
-                fl.find('./{http://www.loc.gov/METS/}FLocat').attrib[
-                        '{http://www.w3.org/1999/xlink}href'])
+                os.path.normpath(fl.find('./{http://www.loc.gov/METS/}FLocat').attrib[
+                        '{http://www.w3.org/1999/xlink}href']))
             file_original_name = os.path.normpath(file_original_location).split(os.path.sep)[-1]
             file_label = os.path.splitext(file_original_name)[0]
             file_size_bytes = os.path.getsize(file_original_location)
