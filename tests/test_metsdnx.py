@@ -1,7 +1,7 @@
 import json
 import os
 
-from nose.tools import *
+from pytest import *
 from lxml import etree as ET
 
 from mets_dnx import factory as mdf
