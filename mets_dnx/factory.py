@@ -8,6 +8,8 @@ from copy import deepcopy
 
 from lxml import etree as ET
 
+from pathlib import Path, PurePath
+
 from pydc import factory as dc_factory
 from pymets import mets_factory as mf
 from pymets import mets_model as mm
@@ -241,7 +243,8 @@ def build_mets(ie_dmd_dict=None,
                     "%Y-%m-%dT%H:%M:%S",
                     time.localtime(os.path.getctime(file_original_location)))
             general_file_characteristics = [{
-                'fileOriginalPath': file_original_location.replace(input_dir + "\\",""),
+                'fileOriginalPath': Path(os.path.normpath(fl.find('./{http://www.loc.gov/METS/}FLocat').attrib[
+                        '{http://www.w3.org/1999/xlink}href'])).as_posix(),
                 'fileSizeBytes': str(file_size_bytes),
                 'fileModificationDate': last_modified,
                 'fileCreationDate': created_time,
@@ -260,23 +263,23 @@ def build_mets(ie_dmd_dict=None,
 
     # clean up identifiers so they are consistent with Rosetta requirements
     for element in mets.xpath(".//*[@ID]"):
-        element.attrib['ID'] = re.sub('ie[0-9]+\-', '', element.attrib['ID'])
+        element.attrib['ID'] = re.sub(r'ie[0-9]+\-', '', element.attrib['ID'])
         element.attrib['ID'] = re.sub(
-                'rep([0-9]+)\-file([0-9]+)',
+                r'rep([0-9]+)\-file([0-9]+)',
                 r'fid\2-\1',
                 element.attrib['ID'])
     for element in mets.xpath(".//*[@ADMID]"):
         element.attrib['ADMID'] = re.sub(
-                'ie[0-9]+\-rep([0-9]+)\-file([0-9]+)-amd',
+                r'ie[0-9]+\-rep([0-9]+)\-file([0-9]+)-amd',
                 r'fid\2-\1-amd',
                 element.attrib['ADMID'])
         element.attrib['ADMID'] = re.sub(
-                'ie[0-9]+\-rep([0-9]+)-amd',
+                r'ie[0-9]+\-rep([0-9]+)-amd',
                 r'rep\1-amd',
                 element.attrib['ADMID'])
     for element in mets.xpath(".//*[@FILEID]"):
         element.attrib['FILEID'] = re.sub(
-                'ie[0-9]+\-rep([0-9])+\-file([0-9]+)',
+                r'ie[0-9]+\-rep([0-9])+\-file([0-9]+)',
                 r'fid\2-\1',
                 element.attrib['FILEID'])
 
@@ -365,7 +368,7 @@ def build_single_file_mets(ie_dmd_dict=None,
             "%Y-%m-%dT%H:%M:%S",
             time.localtime(os.path.getctime(file_original_location)))
     general_file_characteristics = [{
-        'fileOriginalPath': file_original_location,
+        'fileOriginalPath': PurePath(file_original_location).as_posix(),
         'fileSizeBytes': str(file_size_bytes),
         'fileModificationDate': last_modified,
         'fileCreationDate': created_time,

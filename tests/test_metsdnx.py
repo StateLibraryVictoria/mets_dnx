@@ -39,6 +39,30 @@ def test_mets_dnx():
         )
     print(ET.tounicode(mets, pretty_print=True))
 
+def test_fileOriginalPath_is_posix():
+    """Check to ensure fileOriginalPath generated with forward-slash pathnames."""
+    ie_dc_dict = {"dc:title": "test title"}
+    mets = mdf.build_mets(
+        ie_dmd_dict=ie_dc_dict,
+        pres_master_dir=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'data',
+            'test_batch_2'),
+        input_dir=os.path.join(os.path.dirname(
+            os.path.realpath(__file__)),
+            'data',
+            'test_batch_2'),
+        generalIECharacteristics=[{
+            'submissionReason': 'bornDigitalContent',
+            'IEEntityType': 'periodicIE'}],
+        digital_original=True
+        )
+    expected = ["path/to/files/img1.jpg", "path/to/files/img2.jpg"]
+    found = []
+    file_labels_list = mets.findall('.//key[@id="fileOriginalPath"]')
+    for item in file_labels_list:
+        found.append(item.text)
+    assert(found == expected)
 
 def test_mets_dnx_with_digital_original_details():
     """Test big fix where true/false value was being populated with uppercase
